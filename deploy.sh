@@ -7,7 +7,7 @@
 
 set -e
 
-APP_DIR="/var/www/bytesquish.isharankumar.com/ByteSquish"
+APP_DIR="/var/www/bytesquish.isharankumar.com/"
 BRANCH="main"
 
 # Define your NGINX cache path here (if you use one)
