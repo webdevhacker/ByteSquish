@@ -53,7 +53,7 @@ export default function Profile() {
     setResetError('');
     try {
       const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
-      setResetMessage(res.data.message + (res.data.previewUrl ? ` (Preview URL: ${res.data.previewUrl})` : ''));
+      setResetMessage(res.data.message);
     } catch (err) {
       setResetError('Failed to process reset request.');
     }

@@ -87,7 +87,6 @@ router.post('/register', async (req, res) => {
 
     res.json({ 
       message: 'Registration successful. Please check your email for the OTP.',
-      previewUrl: nodemailer.getTestMessageUrl(info) || null,
       email
     });
   } catch (error) {
@@ -151,7 +150,6 @@ router.post('/login', async (req, res) => {
       });
       return res.status(403).json({ 
         error: 'ACCOUNT_NOT_VERIFIED', 
-        previewUrl: nodemailer.getTestMessageUrl(info) || null,
         email
       });
     }
@@ -195,8 +193,7 @@ router.post('/forgot-password', async (req, res) => {
     });
 
     res.json({ 
-      message: 'If an account exists, an email was sent.',
-      previewUrl: nodemailer.getTestMessageUrl(info) || null
+      message: 'If an account exists, an email was sent.'
     });
   } catch (error) {
     console.error('Forgot password error:', error);
