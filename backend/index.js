@@ -17,6 +17,7 @@ mongoose.connect(process.env.DATABASE_URL).then(() => {
 });
 
 const app = express();
+app.set('trust proxy', true);
 
 app.use(cors({
   exposedHeaders: ['X-Original-Size', 'X-Compressed-Size', 'X-Total-Original-Size', 'X-Total-Compressed-Size']
