@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id               Int       @id @default(autoincrement())
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
   email            String    @unique
   name             String    @default("User")
   password         String
@@ -24,18 +24,18 @@ model User {
 }
 
 model Session {
-  id        String   @id @default(uuid())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userAgent String?
-  ipAddress String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent  String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
   lastActive DateTime @default(now())
 }
 
 model Image {
-  id             String   @id @default(uuid())
-  userId         Int
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   originalName   String
   fileName       String
