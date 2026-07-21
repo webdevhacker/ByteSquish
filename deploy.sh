@@ -1,64 +1,107 @@
 #!/bin/bash
 
-# ByteSquish VPS Deployment Script
-# Usage: ./deploy.sh
-# Ensure you have Node.js, npm, and PM2 installed on your VPS.
+# =============================================================================
+# ByteSquish — Production Deploy Script
+# Usage: bash deploy.sh [--skip-build]
+# =============================================================================
 
-echo "==================================="
-echo "🚀 Starting ByteSquish Deployment..."
-echo "==================================="
-
-# Exit immediately if a command exits with a non-zero status
 set -e
 
-# 1. Update repository (Uncomment if using Git)
-# echo "📦 Pulling latest changes from Git..."
-# git pull origin main
+APP_DIR="/var/www/bytesquish.isharankumar.com/ByteSquish"
+BRANCH="main"
 
-# 2. Deploy Backend
-echo "⚙️  Setting up Backend..."
-cd backend
-echo "Installing backend dependencies..."
-# Allow npm to run post-install scripts (needed for Prisma)
+# Define your NGINX cache path here (if you use one)
+NGINX_CACHE_DIR="/var/cache/nginx"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log()    { echo -e "${BLUE}[$(date '+%H:%M:%S')]${NC} $1"; }
+success(){ echo -e "${GREEN}✅ $1${NC}"; }
+warn()   { echo -e "${YELLOW}⚠️  $1${NC}"; }
+error()  { echo -e "${RED}❌ $1${NC}"; exit 1; }
+
+echo ""
+echo -e "${BLUE}╔══════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║     ByteSquish Deployment Script     ║${NC}"
+echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
+echo ""
+
+# ── Check we're in the right directory ──────────────────────────────────────
+cd "$APP_DIR" || error "App directory not found: $APP_DIR"
+
+# ── Pull latest code ─────────────────────────────────────────────────────────
+log "Pulling latest code from $BRANCH..."
+git fetch origin
+git reset --hard origin/$BRANCH
+success "Code updated"
+
+# ── Install server dependencies ───────────────────────────────────────────────
+log "Installing backend dependencies..."
+cd "$APP_DIR/backend"
 npm config set ignore-scripts false
 npm install
 
-echo "Fixing Prisma executable permissions..."
+log "Applying Prisma permissions and syncing Database..."
 chmod +x node_modules/.bin/prisma || true
 chmod +x node_modules/prisma/build/index.js || true
-
-echo "Syncing Prisma Database & Generating Client..."
 npx prisma db push
 npx prisma generate
 
-# Restart Backend with PM2
-# Assuming the PM2 process is named 'bytesquish-backend'
-echo "🔄 Restarting Backend with PM2..."
-if pm2 show bytesquish-backend > /dev/null; then
-    pm2 restart bytesquish-backend
+success "Backend dependencies and Database synced"
+
+# ── Build frontend (unless --skip-build) ─────────────────────────────────────
+if [ "$1" != "--skip-build" ]; then
+    log "Installing & building frontend..."
+    cd "$APP_DIR/frontend"
+    npm install
+    npm run build
+    success "Frontend built → frontend/dist/"
+
+    # Optional: Clear NGINX cache so new frontend assets are served immediately
+    if [ -d "$NGINX_CACHE_DIR" ]; then
+        log "Clearing NGINX static cache..."
+        # Using sudo here in case the script is run as a normal user
+        sudo rm -rf ${NGINX_CACHE_DIR}/*
+        success "NGINX cache cleared"
+    fi
 else
-    pm2 start index.js --name "bytesquish-backend"
+    warn "Skipping frontend build (--skip-build)"
 fi
-cd ..
 
-# 3. Deploy Frontend
-echo "🌐 Setting up Frontend..."
-cd frontend
-echo "Installing frontend dependencies..."
-npm install
+cd "$APP_DIR"
 
-echo "Building frontend for production..."
-npm run build
+# ── Reload PM2 (zero-downtime) ────────────────────────────────────────────────
+log "Reloading PM2..."
+if pm2 list | grep -q "bytesquish-backend"; then
+    pm2 restart bytesquish-backend
+    success "PM2 restarted"
+else
+    cd "$APP_DIR/backend"
+    pm2 start index.js --name "bytesquish-backend"
+    pm2 save
+    cd "$APP_DIR"
+    success "PM2 started"
+fi
 
-echo "✅ Frontend built successfully! (Files are in frontend/dist)"
-cd ..
+# ── Test & reload NGINX ───────────────────────────────────────────────────────
+log "Testing NGINX config..."
 
-# Optional: If you are using Nginx to serve the frontend, uncomment the following line
-# to automatically copy the build to your web server root. (Adjust paths as needed)
-# echo "🚚 Copying frontend files to Nginx web root..."
-# sudo cp -r frontend/dist/* /var/www/html/
+# We add 'sudo' here. If you run this script as a non-root user (which is safer),
+# standard users do not have permission to test or reload NGINX.
+sudo nginx -t || error "NGINX config test failed!"
+sudo systemctl reload nginx
+success "NGINX reloaded"
 
-echo "==================================="
-echo "🎉 Deployment Complete!"
-echo "==================================="
-echo "Make sure Nginx is configured to serve frontend/dist and proxy /api to localhost:5000"
+# ── Done ──────────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${GREEN}╔══════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║        🚀 Deploy Complete! 🚀        ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════╝${NC}"
+echo ""
+log "PM2 status:"
+pm2 status bytesquish-backend
