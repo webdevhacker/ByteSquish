@@ -1,40 +1,35 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const User = require('../models/User');
+const Session = require('../models/Session');
+const Image = require('../models/Image');
 const { requireAdmin } = require('../middlewares/auth');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Get all users, with session history and image stats
 router.get('/users', requireAdmin, async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      include: {
-        sessions: {
-          orderBy: { lastActive: 'desc' },
-          take: 5 // Get last 5 sessions
-        },
-        _count: {
-          select: { images: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    const users = await User.find().sort({ createdAt: -1 }).lean();
     
     // Map data for admin dashboard
-    const mappedUsers = users.map(user => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      isVerified: user.isVerified,
-      isAdmin: user.isAdmin,
-      createdAt: user.createdAt,
-      totalImages: user._count.images,
-      sessions: user.sessions.map(s => ({
-        ipAddress: s.ipAddress,
-        userAgent: s.userAgent,
-        lastActive: s.lastActive
-      }))
+    const mappedUsers = await Promise.all(users.map(async (user) => {
+      const totalImages = await Image.countDocuments({ userId: user._id });
+      const sessions = await Session.find({ userId: user._id }).sort({ lastActive: -1 }).limit(5).lean();
+      
+      return {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isVerified: user.isVerified,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
+        totalImages,
+        sessions: sessions.map(s => ({
+          ipAddress: s.ipAddress,
+          userAgent: s.userAgent,
+          lastActive: s.lastActive
+        }))
+      };
     }));
 
     res.json(mappedUsers);

@@ -5,11 +5,17 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const imageRoutes = require('./routes/images');
 const adminRoutes = require('./routes/admin');
-const { PrismaClient } = require('@prisma/client');
+const mongoose = require('mongoose');
+const Image = require('./models/Image');
 const fs = require('fs');
 const path = require('path');
 
-const prisma = new PrismaClient();
+mongoose.connect(process.env.DATABASE_URL).then(() => {
+  console.log('Connected to MongoDB via Mongoose');
+}).catch(err => {
+  console.error('MongoDB connection error:', err);
+});
+
 const app = express();
 
 app.use(cors({
@@ -29,9 +35,7 @@ app.listen(PORT, () => {
   setInterval(async () => {
     try {
       const now = new Date();
-      const expiredImages = await prisma.image.findMany({
-        where: { expiresAt: { lt: now } }
-      });
+      const expiredImages = await Image.find({ expiresAt: { $lt: now } });
       
       for (const img of expiredImages) {
         const filePath = path.join(__dirname, 'uploads', img.fileName);
@@ -40,9 +44,7 @@ app.listen(PORT, () => {
         }
       }
       
-      await prisma.image.deleteMany({
-        where: { expiresAt: { lt: now } }
-      });
+      await Image.deleteMany({ expiresAt: { $lt: now } });
       
       if (expiredImages.length > 0) {
         console.log(`Cleaned up ${expiredImages.length} expired images.`);

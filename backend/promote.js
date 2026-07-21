@@ -1,5 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+require('dotenv').config();
+const mongoose = require('mongoose');
+const User = require('./models/User');
 
 async function main() {
   const email = process.argv[2];
@@ -8,18 +9,24 @@ async function main() {
     process.exit(1);
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    console.error(`User with email ${email} not found.`);
-    process.exit(1);
+  try {
+    await mongoose.connect(process.env.DATABASE_URL);
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.error(`User with email ${email} not found.`);
+      process.exit(1);
+    }
+
+    user.isAdmin = true;
+    await user.save();
+
+    console.log(`Success! ${email} has been promoted to Admin.`);
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    mongoose.disconnect();
   }
-
-  await prisma.user.update({
-    where: { email },
-    data: { isAdmin: true }
-  });
-
-  console.log(`Success! ${email} has been promoted to Admin.`);
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+main();

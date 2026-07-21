@@ -46,13 +46,7 @@ cd "$APP_DIR/backend"
 npm config set ignore-scripts false
 npm install
 
-log "Applying Prisma permissions and syncing Database..."
-chmod +x node_modules/.bin/prisma || true
-chmod +x node_modules/prisma/build/index.js || true
-npx prisma db push
-npx prisma generate
-
-success "Backend dependencies and Database synced"
+success "Backend dependencies synced"
 
 # ── Build frontend (unless --skip-build) ─────────────────────────────────────
 if [ "$1" != "--skip-build" ]; then

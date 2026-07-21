@@ -3,11 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const { PrismaClient } = require('@prisma/client');
+const User = require('../models/User');
+const Session = require('../models/Session');
 const { requireAuth } = require('../middlewares/auth');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Setup Nodemailer transporter
 let transporter;
@@ -66,15 +66,15 @@ router.post('/register', async (req, res) => {
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
     const displayName = name || 'User';
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ error: 'Email already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const verifyOtp = generateOTP();
     const verifyOtpExpiry = new Date(Date.now() + 3600000); // 1 hour
 
-    const user = await prisma.user.create({ 
-      data: { name: displayName, email, password: hashedPassword, verifyOtp, verifyOtpExpiry } 
+    const user = await User.create({ 
+      name: displayName, email, password: hashedPassword, verifyOtp, verifyOtpExpiry 
     });
 
     const info = await transporter.sendMail({
@@ -100,26 +100,26 @@ router.post('/verify-email', async (req, res) => {
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ error: 'Email and OTP required' });
 
-    const user = await prisma.user.findFirst({
-      where: { email, verifyOtp: otp, verifyOtpExpiry: { gt: new Date() } }
+    const user = await User.findOne({
+      email, verifyOtp: otp, verifyOtpExpiry: { $gt: new Date() }
     });
 
     if (!user) return res.status(400).json({ error: 'Invalid or expired OTP' });
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { isVerified: true, verifyOtp: null, verifyOtpExpiry: null }
-    });
+    user.isVerified = true;
+    user.verifyOtp = null;
+    user.verifyOtpExpiry = null;
+    await user.save();
 
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown';
     
-    const session = await prisma.session.create({
-      data: { userId: user.id, userAgent, ipAddress }
+    const session = await Session.create({
+      userId: user._id, userAgent, ipAddress
     });
 
-    const token = jwt.sign({ userId: user.id, sessionId: session.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (error) {
     res.status(500).json({ error: 'Server error during verification' });
   }
@@ -130,7 +130,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -138,7 +138,9 @@ router.post('/login', async (req, res) => {
     if (!user.isVerified) {
       const verifyOtp = generateOTP();
       const verifyOtpExpiry = new Date(Date.now() + 3600000); // 1 hour
-      await prisma.user.update({ where: { id: user.id }, data: { verifyOtp, verifyOtpExpiry } });
+      user.verifyOtp = verifyOtp;
+      user.verifyOtpExpiry = verifyOtpExpiry;
+      await user.save();
       
       const info = await transporter.sendMail({
         from: '"ByteSquish System" <noreply@bytesquish.com>',
@@ -157,12 +159,12 @@ router.post('/login', async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown';
     
-    const session = await prisma.session.create({
-      data: { userId: user.id, userAgent, ipAddress }
+    const session = await Session.create({
+      userId: user._id, userAgent, ipAddress
     });
 
-    const token = jwt.sign({ userId: user.id, sessionId: session.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (error) {
     res.status(500).json({ error: 'Server error during login' });
   }
@@ -171,7 +173,7 @@ router.post('/login', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await User.findOne({ email });
     if (!user) {
       // Return 200 anyway to prevent email enumeration
       return res.json({ message: 'If an account exists, an email was sent.' });
@@ -180,10 +182,9 @@ router.post('/forgot-password', async (req, res) => {
     const resetToken = generateOTP();
     const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { resetToken, resetTokenExpiry }
-    });
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = resetTokenExpiry;
+    await user.save();
 
     const info = await transporter.sendMail({
       from: '"ByteSquish System" <noreply@bytesquish.com>',
@@ -208,24 +209,22 @@ router.post('/reset-password', async (req, res) => {
     const { email, otp, newPassword } = req.body;
     if (!email || !otp || !newPassword) return res.status(400).json({ error: 'Email, OTP, and new password required' });
 
-    const user = await prisma.user.findFirst({
-      where: {
-        email: email,
-        resetToken: otp,
-        resetTokenExpiry: { gt: new Date() }
-      }
+    const user = await User.findOne({
+      email: email,
+      resetToken: otp,
+      resetTokenExpiry: { $gt: new Date() }
     });
 
     if (!user) return res.status(400).json({ error: 'Invalid or expired OTP' });
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword, resetToken: null, resetTokenExpiry: null }
-    });
+    user.password = hashedPassword;
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
 
     // Invalidate all existing sessions for security
-    await prisma.session.deleteMany({ where: { userId: user.id } });
+    await Session.deleteMany({ userId: user._id });
 
     res.json({ message: 'Password reset successful. Please log in.' });
   } catch (error) {
@@ -235,14 +234,12 @@ router.post('/reset-password', async (req, res) => {
 
 router.get('/sessions', requireAuth, async (req, res) => {
   try {
-    const sessions = await prisma.session.findMany({
-      where: { userId: req.user.userId },
-      orderBy: { lastActive: 'desc' }
-    });
+    const sessions = await Session.find({ userId: req.user.userId }).sort({ lastActive: -1 });
     // Mark the current session
     const mapped = sessions.map(s => ({
-      ...s,
-      isCurrent: s.id === req.user.sessionId
+      ...s.toObject(),
+      id: s._id,
+      isCurrent: s._id.toString() === req.user.sessionId
     }));
     res.json(mapped);
   } catch (error) {
@@ -258,9 +255,7 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Cannot revoke current session. Please log out.' });
     }
     
-    await prisma.session.delete({
-      where: { id, userId: req.user.userId }
-    });
+    await Session.deleteOne({ _id: id, userId: req.user.userId });
     res.json({ message: 'Session revoked' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to revoke session' });

@@ -1,22 +1,19 @@
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const User = require('../models/User');
+const Session = require('../models/Session');
 
 const checkSession = async (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.sessionId) {
-      const session = await prisma.session.findUnique({ 
-        where: { id: decoded.sessionId },
-        include: { user: true }
-      });
-      if (session && session.user) {
-        return { userId: session.userId, sessionId: session.id, isAdmin: session.user.isAdmin };
+      const session = await Session.findById(decoded.sessionId).populate('userId');
+      if (session && session.userId) {
+        return { userId: session.userId._id, sessionId: session._id, isAdmin: session.userId.isAdmin };
       }
     } else {
-      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+      const user = await User.findById(decoded.userId);
       if (user) {
-        return { userId: decoded.userId, isAdmin: user.isAdmin };
+        return { userId: user._id, isAdmin: user.isAdmin };
       }
     }
   } catch (err) {

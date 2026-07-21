@@ -5,11 +5,10 @@ const AdmZip = require('adm-zip');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { PrismaClient } = require('@prisma/client');
+const Image = require('../models/Image');
 const { optionalAuth, authenticateToken } = require('../middlewares/auth');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 
 if (!fs.existsSync(uploadsDir)) {
@@ -70,15 +69,13 @@ router.post('/compress', optionalAuth, upload.array('images', 20), async (req, r
           const filePath = path.join(uploadsDir, fileName);
           fs.writeFileSync(filePath, compressedBuffer);
           
-          dbImage = await prisma.image.create({
-            data: {
-              userId: req.user.userId,
-              originalName,
-              fileName,
-              originalSize: file.size,
-              compressedSize,
-              expiresAt
-            }
+          dbImage = await Image.create({
+            userId: req.user.userId,
+            originalName,
+            fileName,
+            originalSize: file.size,
+            compressedSize,
+            expiresAt
           });
         }
 
@@ -141,11 +138,9 @@ router.post('/compress', optionalAuth, upload.array('images', 20), async (req, r
 // Get user's image history
 router.get('/history', authenticateToken, async (req, res) => {
   try {
-    const images = await prisma.image.findMany({
-      where: { userId: req.user.userId },
-      orderBy: { createdAt: 'desc' }
-    });
-    res.json(images);
+    const images = await Image.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    // Map _id to id for frontend compatibility
+    res.json(images.map(img => ({ ...img.toObject(), id: img._id })));
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
@@ -154,11 +149,9 @@ router.get('/history', authenticateToken, async (req, res) => {
 // Download a specific historical image
 router.get('/download/:id', authenticateToken, async (req, res) => {
   try {
-    const image = await prisma.image.findUnique({
-      where: { id: req.params.id }
-    });
+    const image = await Image.findById(req.params.id);
 
-    if (!image || image.userId !== req.user.userId) {
+    if (!image || image.userId.toString() !== req.user.userId.toString()) {
       return res.status(404).json({ error: 'Image not found' });
     }
 
