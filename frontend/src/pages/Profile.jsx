@@ -26,10 +26,10 @@ export default function Profile() {
     setLoading(true);
     try {
       if (activeTab === 'vault') {
-        const res = await axios.get('http://localhost:5000/api/images/history');
+        const res = await axios.get('/api/images/history');
         setImages(res.data);
       } else {
-        const res = await axios.get('http://localhost:5000/api/auth/sessions');
+        const res = await axios.get('/api/auth/sessions');
         setSessions(res.data);
       }
     } catch (err) {
@@ -40,7 +40,7 @@ export default function Profile() {
 
   const handleRevokeSession = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/auth/sessions/${id}`);
+      await axios.delete(`/api/auth/sessions/${id}`);
       setSessions(sessions.filter(s => s.id !== id));
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to revoke session');
@@ -52,7 +52,7 @@ export default function Profile() {
     setResetMessage('');
     setResetError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: resetEmail });
+      const res = await axios.post('/api/auth/forgot-password', { email: resetEmail });
       setResetMessage(res.data.message);
     } catch (err) {
       setResetError('Failed to process reset request.');
@@ -131,7 +131,7 @@ export default function Profile() {
                         <span className="text-xs bg-red-950 text-red-500 px-2 py-1 rounded">EXPIRED</span>
                       ) : (
                         <a 
-                          href={`http://localhost:5000/api/images/download/${img.id}`} 
+                          href={`/api/images/download/${img.id}`} 
                           className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 p-2 rounded-lg transition-colors shrink-0"
                           title="Download"
                         >

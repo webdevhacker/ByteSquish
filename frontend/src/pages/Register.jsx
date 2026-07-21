@@ -29,7 +29,7 @@ export default function Register() {
     setError('');
     
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+      const res = await axios.post('/api/auth/register', { name, email, password });
       setSuccessMsg(res.data.message);
       setTimeout(() => {
         navigate('/verify?email=' + encodeURIComponent(res.data.email));
