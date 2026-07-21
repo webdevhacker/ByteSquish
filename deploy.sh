@@ -19,7 +19,13 @@ set -e
 echo "⚙️  Setting up Backend..."
 cd backend
 echo "Installing backend dependencies..."
+# Allow npm to run post-install scripts (needed for Prisma)
+npm config set ignore-scripts false
 npm install
+
+echo "Fixing Prisma executable permissions..."
+chmod +x node_modules/.bin/prisma || true
+chmod +x node_modules/prisma/build/index.js || true
 
 echo "Syncing Prisma Database & Generating Client..."
 npx prisma db push
