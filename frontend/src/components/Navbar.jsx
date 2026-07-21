@@ -9,13 +9,10 @@ export default function Navbar() {
     <div className="fixed top-0 inset-x-0 z-50 pt-4 flex justify-center w-full pointer-events-none">
       <header className="pointer-events-auto backdrop-blur-2xl bg-white/60 dark:bg-zinc-900/60 border border-gray-200/50 dark:border-zinc-800/50 transition-colors duration-300 rounded-2xl shadow-xl shadow-black/5 dark:shadow-sky-900/10 w-[95%] max-w-6xl">
         <div className="px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-sky-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/30 group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
-              <ImageIcon size={18} strokeWidth={2.5} className="sm:hidden" />
-              <ImageIcon size={22} strokeWidth={2.5} className="hidden sm:block" />
-            </div>
-            <span className="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-br from-sky-600 to-purple-500 dark:from-sky-400 dark:to-purple-300 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
-              ByteSquish
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <ImageIcon size={24} className="text-sky-500 group-hover:scale-110 transition-transform duration-300" />
+            <span className="font-extrabold text-lg sm:text-xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-purple-500 group-hover:opacity-80 transition-opacity">
+              BYTE.SQUISH_
             </span>
           </Link>
 
