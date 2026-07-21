@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const sharp = require('sharp');
+const { Jimp, JimpMime } = require('jimp');
 const AdmZip = require('adm-zip');
 const fs = require('fs');
 const path = require('path');
@@ -45,18 +45,22 @@ router.post('/compress', optionalAuth, upload.array('images', 20), async (req, r
         const originalName = file.originalname;
         const format = file.mimetype.split('/')[1];
 
-        // Basic compression using Sharp
-        if (['jpeg', 'jpg', 'png', 'webp'].includes(format)) {
-          let sharpInstance = sharp(file.buffer);
+        // Basic compression using Jimp
+        if (['jpeg', 'jpg', 'png', 'bmp'].includes(format)) {
+          let image = await Jimp.read(file.buffer);
           
+          let mime;
+          let options = {};
           if (format === 'jpeg' || format === 'jpg') {
-             sharpInstance = sharpInstance.jpeg({ quality });
+            mime = JimpMime.jpeg;
+            options = { quality };
           } else if (format === 'png') {
-             sharpInstance = sharpInstance.png({ quality });
-          } else if (format === 'webp') {
-             sharpInstance = sharpInstance.webp({ quality });
+            mime = JimpMime.png;
+          } else if (format === 'bmp') {
+            mime = JimpMime.bmp;
           }
-          compressedBuffer = await sharpInstance.toBuffer();
+
+          compressedBuffer = await image.getBuffer(mime, options);
         } else {
           compressedBuffer = file.buffer;
         }
