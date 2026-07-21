@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0ea5e9;
+  --color-primary-dark: #0284c7;
+  
+  --color-background-light: #f8fafc;
+  --color-background-dark: #09090b; /* Deep zinc black */
+  
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #18181b; /* Zinc 900 */
+  
+  --color-text-light: #0f172a;
+  --color-text-dark: #f8fafc;
+}
+
+/* Base styles */
+:root {
+  color-scheme: light;
+  --bg-color: var(--color-background-light);
+  --text-color: var(--color-text-light);
+}
+
+.dark {
+  color-scheme: dark;
+  --bg-color: var(--color-background-dark);
+  --text-color: var(--color-text-dark);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-image: 
+    linear-gradient(to right, rgba(128, 128, 128, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(128, 128, 128, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: fixed;
+}
+
+.dark body {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Custom Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(300px); opacity: 0; }
+}
+
+.animate-scan {
+  animation: scanline 2.5s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(14, 165, 233, 0.6); }
+  100% { box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+}
+
+.hover-glow:hover {
+  animation: pulseGlow 1.5s infinite;
+}
+
+/* Tech Font for specific elements */
+.font-tech {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
