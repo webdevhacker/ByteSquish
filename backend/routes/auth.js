@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const UAParser = require('ua-parser-js');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const Session = require('../models/Session');
@@ -110,8 +111,11 @@ router.post('/verify-email', async (req, res) => {
     user.verifyOtpExpiry = null;
     await user.save();
 
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown';
+    const rawUA = req.headers['user-agent'] || '';
+    const parser = new UAParser(rawUA);
+    const uaResult = parser.getResult();
+    const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
+    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
     
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
@@ -154,8 +158,11 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown';
+    const rawUA = req.headers['user-agent'] || '';
+    const parser = new UAParser(rawUA);
+    const uaResult = parser.getResult();
+    const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
+    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
     
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
