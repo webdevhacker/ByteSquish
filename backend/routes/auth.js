@@ -115,7 +115,7 @@ router.post('/verify-email', async (req, res) => {
     const parser = new UAParser(rawUA);
     const uaResult = parser.getResult();
     const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
+    const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
     
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
@@ -162,7 +162,7 @@ router.post('/login', async (req, res) => {
     const parser = new UAParser(rawUA);
     const uaResult = parser.getResult();
     const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
+    const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
     
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
