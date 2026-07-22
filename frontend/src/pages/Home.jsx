@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { UploadCloud, Settings, Download, X, AlertCircle, FileImage, CheckCircle } from 'lucide-react';
+import { UploadCloud, Settings, Download, X, AlertCircle, FileImage, CheckCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ export default function Home() {
   const [files, setFiles] = useState([]);
   const [quality, setQuality] = useState(80);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [downloadFormat, setDownloadFormat] = useState('zip');
   const [error, setError] = useState('');
@@ -47,6 +48,7 @@ export default function Home() {
     if (files.length === 0) return;
     
     setLoading(true);
+    setProgress(0);
     setError('');
     setResult(null);
 
@@ -61,7 +63,13 @@ export default function Home() {
 
       const config = {
         responseType: isSingleMode ? 'json' : 'blob',
-        headers: { }
+        headers: { },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(Math.min(percent, 90));
+          }
+        }
       };
       if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
@@ -69,6 +77,7 @@ export default function Home() {
       
       const endpoint = isSingleMode ? '/api/images/compress?zip=false' : '/api/images/compress';
       const res = await axios.post(endpoint, formData, config);
+      setProgress(100);
 
       if (isSingleMode) {
         const data = res.data;
@@ -180,47 +189,119 @@ export default function Home() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* Dropzone */}
-        <div className="md:col-span-2 relative group">
-          <div className="absolute inset-0 bg-gradient-to-r from-sky-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-          <div 
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={onDrop}
-            className="relative overflow-hidden border border-gray-200 dark:border-zinc-700/50 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-10 flex flex-col items-center justify-center min-h-[300px] hover:border-sky-500/50 transition-all cursor-pointer shadow-2xl shadow-black/5"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <div className="absolute inset-0 pointer-events-none border-2 border-transparent group-hover:border-sky-500/30 rounded-2xl transition-colors"></div>
-            {/* Scanline Animation */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-sky-500/50 shadow-[0_0_15px_#0ea5e9] hidden group-hover:block animate-scan"></div>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              multiple 
-              accept="image/jpeg,image/png,image/webp" 
-              className="hidden" 
-              onChange={(e) => handleFiles(e.target.files)}
-            />
-            <div className="w-20 h-20 bg-sky-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.3)] transition-all duration-300 border border-sky-200 dark:border-zinc-700">
-              <UploadCloud size={32} className="text-sky-600 dark:text-sky-400" />
-            </div>
-            <p className="text-lg font-bold text-gray-800 dark:text-zinc-200 mb-2 font-tech tracking-wider">
-              AWAITING_DATA_INPUT
-            </p>
-            <p className="text-sm text-gray-500 dark:text-zinc-500">
-              [ Drag & Drop or Click to Browse ]
-            </p>
-            <div className="absolute bottom-4 right-6 text-xs text-sky-500 font-tech font-bold opacity-60">
-              {files.length}/{maxFiles} ALLOCATED
+        {/* Left Column: Dropzone + Queue */}
+        <div className="md:col-span-2 flex flex-col gap-6">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-sky-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+            <div 
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={onDrop}
+              className="relative overflow-hidden border border-gray-200 dark:border-zinc-700/50 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-10 flex flex-col items-center justify-center min-h-[300px] hover:border-sky-500/50 transition-all cursor-pointer shadow-2xl shadow-black/5"
+              onClick={() => fileInputRef.current.click()}
+            >
+              <div className="absolute inset-0 pointer-events-none border-2 border-transparent group-hover:border-sky-500/30 rounded-2xl transition-colors"></div>
+              {/* Scanline Animation */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-sky-500/50 shadow-[0_0_15px_#0ea5e9] hidden group-hover:block animate-scan"></div>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                multiple 
+                accept="image/jpeg,image/png,image/webp" 
+                className="hidden" 
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+              <div className="w-20 h-20 bg-sky-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.3)] transition-all duration-300 border border-sky-200 dark:border-zinc-700">
+                <UploadCloud size={32} className="text-sky-600 dark:text-sky-400" />
+              </div>
+              <p className="text-lg font-bold text-gray-800 dark:text-zinc-200 mb-2 font-tech tracking-wider">
+                AWAITING_DATA_INPUT
+              </p>
+              <p className="text-sm text-gray-500 dark:text-zinc-500">
+                [ Drag & Drop or Click to Browse ]
+              </p>
+              <div className="absolute bottom-4 right-6 text-xs text-sky-500 font-tech font-bold opacity-60">
+                {files.length}/{maxFiles} ALLOCATED
+              </div>
             </div>
           </div>
+
+          {/* Queue Section Moved Here */}
+          {files.length > 0 && (
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-zinc-800/50 p-6 shadow-xl font-tech text-sm">
+              <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-100 dark:border-zinc-800">
+                <h3 className="font-bold text-gray-900 dark:text-zinc-200 tracking-wider">QUEUE [{files.length}]</h3>
+                <button 
+                  onClick={() => {setFiles([]); setResult(null);}}
+                  className="text-xs text-red-500 hover:text-red-400 uppercase tracking-widest border border-red-500/30 px-3 py-1 rounded-md bg-red-500/5 transition-colors hover:bg-red-500/20"
+                >
+                  Abort_All
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {files.map((file, i) => {
+                  const compressedFile = result?.isSingleFiles ? result.files[i] : null;
+                  return (
+                    <div key={i} className={`relative group rounded-lg p-3 border transition-colors ${compressedFile ? 'bg-green-500/5 border-green-500/30' : 'bg-gray-50 dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-sky-500/50'}`}>
+                      <button 
+                        onClick={() => removeFile(i)}
+                        className="absolute -top-2 -right-2 bg-zinc-800 dark:bg-zinc-700 border border-zinc-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 shadow-lg z-10"
+                      >
+                        <X size={14} />
+                      </button>
+                      <div className="flex flex-col items-center gap-2 text-center relative">
+                        <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center relative">
+                          {file.preview ? (
+                            <img src={file.preview} alt={file.name} className={`w-full h-full object-cover ${compressedFile ? 'opacity-70' : ''}`} />
+                          ) : (
+                            <FileImage className="text-sky-400" size={24} />
+                          )}
+                          {loading && !compressedFile && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20 rounded-md">
+                              <Loader2 className="text-sky-400 animate-spin mb-1" size={18} />
+                              <span className="text-[10px] font-bold text-sky-400">{progress}%</span>
+                            </div>
+                          )}
+                          {compressedFile && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-green-500/20 backdrop-blur-[1px] rounded-md z-20">
+                              <CheckCircle className="text-green-400 shadow-xl" size={28} />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate w-full" title={file.name}>
+                          {file.name}
+                        </span>
+                        {compressedFile ? (
+                          <div className="flex flex-col items-center w-full">
+                            <span className="text-[10px] text-green-500/70 line-through">
+                              {formatBytes(file.size)}
+                            </span>
+                            <span className="text-xs font-bold text-green-500">
+                              {formatBytes(compressedFile.compressedSize)}
+                            </span>
+                            <span className="text-[10px] font-black text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded mt-1">
+                              -{((file.size - compressedFile.compressedSize) / file.size * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            {formatBytes(file.size)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Settings panel */}
         <div className="space-y-6">
           <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-zinc-800/50 p-6 shadow-xl relative overflow-hidden">
             <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6 font-tech tracking-wide uppercase text-sm border-b border-gray-100 dark:border-zinc-800 pb-3">
-              <Settings size={16} className="text-sky-500" /> Params.Config
+              <Settings size={16} className="text-sky-500" /> Settings
             </h3>
             
             <div className="space-y-4">
@@ -354,47 +435,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      {files.length > 0 && (
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-zinc-800/50 p-6 shadow-xl font-tech text-sm">
-          <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-100 dark:border-zinc-800">
-            <h3 className="font-bold text-gray-900 dark:text-zinc-200 tracking-wider">QUEUE [{files.length}]</h3>
-            <button 
-              onClick={() => {setFiles([]); setResult(null);}}
-              className="text-xs text-red-500 hover:text-red-400 uppercase tracking-widest border border-red-500/30 px-3 py-1 rounded-md bg-red-500/5"
-            >
-              Abort_All
-            </button>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {files.map((file, i) => (
-              <div key={i} className="relative group bg-gray-50 dark:bg-zinc-950 rounded-lg p-3 border border-gray-200 dark:border-zinc-800 hover:border-sky-500/50 transition-colors">
-                <button 
-                  onClick={() => removeFile(i)}
-                  className="absolute -top-2 -right-2 bg-zinc-800 dark:bg-zinc-700 border border-zinc-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 shadow-lg"
-                >
-                  <X size={14} />
-                </button>
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center">
-                    {file.preview ? (
-                      <img src={file.preview} alt={file.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <FileImage className="text-sky-400" size={24} />
-                    )}
-                  </div>
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate w-full" title={file.name}>
-                    {file.name}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {formatBytes(file.size)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
     </div>
   );
