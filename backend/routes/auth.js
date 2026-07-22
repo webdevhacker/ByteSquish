@@ -66,7 +66,7 @@ const getEmailTemplate = (title, message, otp = null, subMessage = null) => `
 
 const http = require('http');
 
-async function sendSignInAlert(user, ipAddress, userAgent) {
+async function sendSignInAlert(user, ipAddress, userAgent, sessionId = null) {
   let location = 'Unknown Location';
   if (ipAddress !== 'Unknown' && !ipAddress.includes('127.0.0.1') && !ipAddress.includes('::1')) {
     location = await new Promise((resolve) => {
@@ -81,6 +81,10 @@ async function sendSignInAlert(user, ipAddress, userAgent) {
         });
       }).on('error', () => resolve('Unknown Location'));
     });
+  }
+
+  if (sessionId) {
+    await Session.updateOne({ _id: sessionId }, { location }).catch(() => {});
   }
 
   const emailText = `A new sign-in was detected for your account.\n\nDevice: ${userAgent}\nIP Address: ${ipAddress}\nLocation: ${location}\nTime: ${new Date().toUTCString()}\n\nIf this was you, you can safely ignore this email.`;
@@ -157,7 +161,7 @@ router.post('/verify-email', async (req, res) => {
 
     const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     
-    sendSignInAlert(user, ipAddress, userAgent);
+    sendSignInAlert(user, ipAddress, userAgent, session._id);
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (error) {
@@ -207,7 +211,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     
-    sendSignInAlert(user, ipAddress, userAgent);
+    sendSignInAlert(user, ipAddress, userAgent, session._id);
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (error) {
@@ -298,7 +302,14 @@ router.get('/sessions', requireAuth, async (req, res) => {
       id: s._id,
       isCurrent: s._id.toString() === req.user.sessionId
     }));
-    res.json(mapped);
+    
+    const currentSession = mapped.find(s => s.isCurrent);
+    const inactiveSessions = mapped.filter(s => !s.isCurrent).slice(0, 4);
+    
+    // Combine them, putting current first
+    const finalSessions = currentSession ? [currentSession, ...inactiveSessions] : inactiveSessions;
+    
+    res.json(finalSessions);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch sessions' });
   }

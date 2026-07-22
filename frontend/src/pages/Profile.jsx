@@ -281,15 +281,22 @@ export default function Profile() {
                       Started: {new Date(s.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  {!s.isCurrent && (
-                    <button 
-                      onClick={() => handleRevokeSession(s.id)}
-                      className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0"
-                      title="Revoke Access"
-                    >
-                      <XCircle size={18} />
-                    </button>
-                  )}
+                  <div className="text-right">
+                    {s.location && (
+                      <p className="text-[11px] font-bold text-sky-400 mb-2 truncate max-w-[150px]" title={s.location}>
+                        {s.location}
+                      </p>
+                    )}
+                    {!s.isCurrent && (
+                      <button 
+                        onClick={() => handleRevokeSession(s.id)}
+                        className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-2 rounded-lg transition-colors shrink-0"
+                        title="Revoke Access"
+                      >
+                        <XCircle size={18} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
