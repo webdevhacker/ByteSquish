@@ -29,7 +29,7 @@ export default function Register() {
     setError('');
     
     try {
-      const res = await axios.post('http://127.0.0.1:5000/api/auth/register', { name, email, password });
+      const res = await axios.post('https://bytesquish.isharankumar.com/api/auth/register', { name, email, password });
       setSuccessMsg(res.data.message);
       setTimeout(() => {
         navigate('/verify?email=' + encodeURIComponent(res.data.email));
