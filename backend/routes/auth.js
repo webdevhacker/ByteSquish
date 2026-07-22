@@ -79,7 +79,7 @@ router.post('/register', async (req, res) => {
     });
 
     const info = await transporter.sendMail({
-      from: '"ByteSquish System" <noreply@bytesquish.com>',
+      from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
       to: email,
       subject: "Verify Your Email",
       text: `Your verification OTP is: ${verifyOtp}`,
@@ -146,7 +146,7 @@ router.post('/login', async (req, res) => {
       await user.save();
       
       const info = await transporter.sendMail({
-        from: '"ByteSquish System" <noreply@bytesquish.com>',
+        from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
         to: email,
         subject: "Verify Your Email",
         text: `Your verification OTP is: ${verifyOtp}`,
@@ -192,7 +192,7 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     const info = await transporter.sendMail({
-      from: '"ByteSquish System" <noreply@bytesquish.com>',
+      from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
       to: user.email,
       subject: "Password Reset Request",
       text: `Your password reset OTP is: ${resetToken}`,
