@@ -272,7 +272,7 @@ export default function Profile() {
                 <div key={s.id} className={`p-4 rounded-xl border flex items-center justify-between ${s.isCurrent ? 'bg-sky-950/20 border-sky-900/50' : 'bg-zinc-900/30 border-zinc-800'}`}>
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-zinc-200">
-                      {s.ipAddress} {s.isCurrent && <span className="ml-2 text-[10px] bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded uppercase">Current_Device</span>}
+                      {s.ipAddress} {s.isCurrent && <span className="ml-2 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded uppercase font-black tracking-widest">Active</span>}
                     </p>
                     <p className="text-xs text-zinc-500 truncate max-w-[200px] sm:max-w-[250px]" title={s.userAgent}>
                       {s.userAgent}
