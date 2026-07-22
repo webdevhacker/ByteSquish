@@ -12,9 +12,12 @@ export default function Profile() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetStep, setResetStep] = useState(1);
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [resetMessage, setResetMessage] = useState('');
   const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
     if (user && token) {
@@ -47,16 +50,39 @@ export default function Profile() {
     }
   };
 
-  const handleForgotPassword = async (e) => {
+  const handleRequestOtp = async () => {
+    setResetMessage('');
+    setResetError('');
+    setResetLoading(true);
+    try {
+      const res = await axios.post('/api/auth/forgot-password', { email: user.email });
+      setResetMessage(res.data.message);
+      setResetStep(2);
+    } catch (err) {
+      setResetError('Failed to request reset code.');
+    }
+    setResetLoading(false);
+  };
+
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     setResetMessage('');
     setResetError('');
+    setResetLoading(true);
     try {
-      const res = await axios.post('/api/auth/forgot-password', { email: resetEmail });
+      const res = await axios.post('/api/auth/reset-password', {
+        email: user.email,
+        otp: resetOtp,
+        newPassword: newPassword
+      });
       setResetMessage(res.data.message);
+      setResetStep(1);
+      setResetOtp('');
+      setNewPassword('');
     } catch (err) {
-      setResetError('Failed to process reset request.');
+      setResetError(err.response?.data?.error || 'Failed to reset password');
     }
+    setResetLoading(false);
   };
 
   if (!user) {
@@ -161,27 +187,70 @@ export default function Profile() {
           
           <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl">
             <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <Lock size={18} className="text-purple-500" /> RESET_PASSWORD
+              <Lock size={18} className="text-purple-500" /> CHANGE_PASSWORD
             </h3>
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <label className="block text-xs text-zinc-500 mb-1">EMAIL_ADDRESS</label>
-                <input 
-                  type="email" 
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition-colors"
-                  placeholder="Enter email to receive reset link"
-                  required
-                />
+            
+            {resetStep === 1 ? (
+              <div className="space-y-4">
+                <p className="text-xs text-zinc-400">
+                  To change your password, we need to verify your identity. We will send a 6-digit code to <strong className="text-purple-400">{user.email}</strong>.
+                </p>
+                <button 
+                  onClick={handleRequestOtp}
+                  disabled={resetLoading}
+                  className="w-full bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 font-bold py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                >
+                  {resetLoading ? 'SENDING...' : 'SEND_VERIFICATION_CODE'}
+                </button>
               </div>
-              <button 
-                type="submit"
-                className="w-full bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 font-bold py-2 rounded-lg transition-colors text-sm"
-              >
-                REQUEST_RESET_LINK
-              </button>
-            </form>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">6-DIGIT_CODE</label>
+                  <input 
+                    type="text" 
+                    maxLength={6}
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition-colors tracking-widest font-mono"
+                    placeholder="000000"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">NEW_PASSWORD</label>
+                  <input 
+                    type="password" 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition-colors"
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setResetStep(1);
+                      setResetError('');
+                      setResetMessage('');
+                    }}
+                    className="w-1/3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-2 rounded-lg transition-colors text-sm"
+                  >
+                    CANCEL
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={resetLoading || resetOtp.length !== 6}
+                    className="w-2/3 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 font-bold py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                  >
+                    {resetLoading ? 'UPDATING...' : 'CONFIRM_PASSWORD_CHANGE'}
+                  </button>
+                </div>
+              </form>
+            )}
             {resetMessage && (
               <div className="mt-4 p-3 bg-green-950/50 border border-green-900 text-green-400 text-xs rounded break-all">
                 {resetMessage}
