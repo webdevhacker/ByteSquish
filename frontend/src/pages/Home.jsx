@@ -67,7 +67,7 @@ export default function Home() {
         config.headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const endpoint = isSingleMode ? '/api/images/compress?zip=false' : '/api/images/compress';
+      const endpoint = isSingleMode ? 'http://localhost:5000/api/images/compress?zip=false' : 'http://localhost:5000/api/images/compress';
       const res = await axios.post(endpoint, formData, config);
 
       if (isSingleMode) {
