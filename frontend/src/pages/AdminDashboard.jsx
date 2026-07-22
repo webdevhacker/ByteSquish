@@ -21,7 +21,7 @@ export default function AdminDashboard() {
     const fetchUsers = async () => {
       try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const res = await axios.get('https://bytesquish.isharankumar.com/api/admin/users', config);
+        const res = await axios.get('http://localhost:5000/api/admin/users', config);
         setUsers(res.data);
       } catch (err) {
         setError('Failed to fetch user data. Make sure you have admin privileges.');
