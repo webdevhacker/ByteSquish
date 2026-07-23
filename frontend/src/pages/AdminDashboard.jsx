@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Shield, ShieldAlert, Monitor, Clock, Image as ImageIcon, MapPin, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Alert from '../components/Alert';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -73,10 +74,7 @@ export default function AdminDashboard() {
       </div>
 
       {error ? (
-        <div className="bg-red-950/30 border border-red-500/50 text-red-400 p-4 rounded-xl flex items-start gap-3 relative z-10 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-          <ShieldAlert className="shrink-0 mt-0.5" size={18} />
-          <p className="text-xs font-mono tracking-widest">{error}</p>
-        </div>
+        <Alert type="error" message={error} />
       ) : (
         <div className="bg-zinc-950/80 backdrop-blur-xl rounded-2xl border border-purple-900/50 shadow-[0_0_30px_rgba(168,85,247,0.05)] overflow-hidden relative z-10 font-mono">
           <div className="overflow-x-auto custom-scrollbar">

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { KeyRound, Loader2, CheckCircle } from 'lucide-react';
+import Alert from '../components/Alert';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -60,18 +61,8 @@ export default function VerifyEmail() {
         </p>
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-950/50 border border-red-900 text-red-400 rounded-lg text-xs font-mono text-center">
-          {error}
-        </div>
-      )}
-      
-      {success && (
-        <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-900 text-emerald-400 rounded-lg text-xs font-mono text-center flex flex-col items-center gap-2">
-          <CheckCircle size={24} />
-          {success}
-        </div>
-      )}
+      {error && <Alert type="error" message={error} className="mb-6" />}
+      {success && <Alert type="success" message={success} className="mb-6" />}
 
       <form onSubmit={handleVerify} className="space-y-6 relative z-10">
         {!initialEmail && (

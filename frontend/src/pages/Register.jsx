@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Loader2, User } from 'lucide-react';
+import Alert from '../components/Alert';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -55,16 +56,8 @@ export default function Register() {
         <p className="text-sky-500/80 font-mono text-xs tracking-widest">INITIALIZE CLEARANCE PROTOCOLS</p>
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-950/50 border border-red-900 text-red-400 rounded-lg text-xs font-mono text-center">
-          {error}
-        </div>
-      )}
-      {successMsg && (
-        <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-900 text-emerald-400 rounded-lg text-xs font-mono text-center">
-          {successMsg}
-        </div>
-      )}
+      {error && <Alert type="error" message={error} className="mb-6" />}
+      {successMsg && <Alert type="success" message={successMsg} className="mb-6" />}
 
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         <div>

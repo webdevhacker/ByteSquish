@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, CheckCircle, Mail, KeyRound } from 'lucide-react';
+import Alert from '../components/Alert';
 
 export default function ResetPassword() {
   const [step, setStep] = useState(1); // 1: Request OTP, 2: Submit OTP
@@ -73,17 +74,8 @@ export default function ResetPassword() {
         </p>
       </div>
 
-      {message && step !== 3 && (
-        <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-900 text-emerald-400 rounded-lg text-xs font-mono text-center">
-          {message}
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-950/50 border border-red-900 text-red-400 rounded-lg text-xs font-mono text-center">
-          {error}
-        </div>
-      )}
+      {message && step !== 3 && <Alert type="success" message={message} className="mb-6" />}
+      {error && <Alert type="error" message={error} className="mb-6" />}
 
       {step === 1 && (
         <form onSubmit={handleRequestOtp} className="space-y-6 relative z-10">

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { UploadCloud, Settings, Download, X, AlertCircle, FileImage, CheckCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import Alert from '../components/Alert';
 
 export default function Home() {
   const { user, token } = useAuth();
@@ -182,10 +183,7 @@ export default function Home() {
       )}
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm flex items-center gap-2">
-          <AlertCircle size={18} />
-          {error}
-        </div>
+        <Alert type="error" message={error} />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

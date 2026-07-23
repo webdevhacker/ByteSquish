@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, HardDrive, Shield, Download, XCircle, Clock, Smartphone, AlertTriangle, Trash, QrCode, Power } from 'lucide-react';
+import Alert from '../components/Alert';
 
 export default function Profile() {
   const { user, token, logout } = useAuth();
@@ -358,16 +359,8 @@ export default function Profile() {
                 </div>
               </form>
             )}
-            {resetMessage && (
-              <div className="mt-4 p-3 bg-green-950/50 border border-green-900 text-green-400 text-xs rounded break-all">
-                {resetMessage}
-              </div>
-            )}
-            {resetError && (
-              <div className="mt-4 p-3 bg-red-950/50 border border-red-900 text-red-400 text-xs rounded">
-                {resetError}
-              </div>
-            )}
+            {resetMessage && <Alert type="success" message={resetMessage} className="mt-4" />}
+            {resetError && <Alert type="error" message={resetError} className="mt-4" />}
           </div>
 
           <div className="bg-zinc-950/60 backdrop-blur-xl border border-emerald-900/30 hover:border-emerald-500/50 p-6 rounded-2xl shadow-lg relative overflow-hidden transition-all group flex flex-col justify-between">
@@ -443,8 +436,8 @@ export default function Profile() {
                 </div>
               )}
 
-              {twoFactorMessage && <div className="mt-4 text-xs text-emerald-400 text-center">{twoFactorMessage}</div>}
-              {twoFactorError && <div className="mt-4 text-xs text-red-400 text-center">{twoFactorError}</div>}
+              {twoFactorMessage && <Alert type="success" message={twoFactorMessage} className="mt-4" />}
+              {twoFactorError && <Alert type="error" message={twoFactorError} className="mt-4" />}
             </div>
           </div>
 
@@ -497,7 +490,7 @@ export default function Profile() {
                     </button>
                   </form>
                 )}
-                {deleteAccError && <div className="mt-2 text-xs text-red-400 text-center">{deleteAccError}</div>}
+                {deleteAccError && <Alert type="error" message={deleteAccError} className="mt-4" />}
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import Alert from '../components/Alert';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -78,11 +79,7 @@ export default function Login() {
         <p className="text-sky-500/80 font-mono text-xs tracking-widest">ESTABLISH SECURE CONNECTION</p>
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-950/50 border border-red-900 text-red-400 rounded-lg text-xs font-mono text-center">
-          {error}
-        </div>
-      )}
+      {error && <Alert type="error" message={error} className="mb-6" />}
 
       {requires2FA ? (
         <form onSubmit={handleVerify2FA} className="space-y-6 relative z-10">
