@@ -18,17 +18,17 @@ async function verifyTurnstile(token) {
     return true; // Skip in dev without keys
   }
   if (!token) return false;
-  
+
   try {
     const formData = new URLSearchParams();
     formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA');
     formData.append('response', token);
-    
+
     const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       body: formData
     });
-    
+
     const data = await res.json();
     return data.success;
   } catch (err) {
@@ -57,7 +57,7 @@ async function setupMailer() {
     transporter = nodemailer.createTransport({
       host: "smtp.ethereal.email",
       port: 587,
-      secure: false, 
+      secure: false,
       auth: {
         user: testAccount.user,
         pass: testAccount.pass,
@@ -113,7 +113,7 @@ async function sendSignInAlert(user, ipAddress, userAgent, sessionId = null) {
   }
 
   if (sessionId) {
-    await Session.updateOne({ _id: sessionId }, { location }).catch(() => {});
+    await Session.updateOne({ _id: sessionId }, { location }).catch(() => { });
   }
 
   const emailText = `A new sign-in was detected for your account.\n\nDevice: ${userAgent}\nIP Address: ${ipAddress}\nLocation: ${location}\nTime: ${new Date().toUTCString()}\n\nIf this was you, you can safely ignore this email.`;
@@ -132,7 +132,7 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password, turnstileToken } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-    
+
     if (!(await verifyTurnstile(turnstileToken))) {
       return res.status(400).json({ error: 'Security verification failed. Please try again.' });
     }
@@ -146,19 +146,19 @@ router.post('/register', async (req, res) => {
     const verifyOtp = generateOTP();
     const verifyOtpExpiry = new Date(Date.now() + 3600000); // 1 hour
 
-    const user = await User.create({ 
-      name: displayName, email, password: hashedPassword, verifyOtp, verifyOtpExpiry 
+    const user = await User.create({
+      name: displayName, email, password: hashedPassword, verifyOtp, verifyOtpExpiry
     });
 
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
       to: email,
-      subject: "Verify Your Email",
+      subject: "Verify Your Email Address",
       text: `Your verification OTP is: ${verifyOtp}`,
       html: getEmailTemplate("Verify Your Email", "Thanks for signing up! Please use the following one-time password to verify your email address.", verifyOtp)
     });
 
-    res.json({ 
+    res.json({
       message: 'Registration successful. Please check your email for the OTP.',
       email
     });
@@ -188,13 +188,13 @@ router.post('/verify-email', async (req, res) => {
     const uaResult = parser.getResult();
     const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
     const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
-    
+
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
     });
 
     const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    
+
     sendSignInAlert(user, ipAddress, userAgent, session._id);
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, isTwoFactorEnabled: user.isTwoFactorEnabled } });
@@ -223,7 +223,7 @@ router.post('/login', async (req, res) => {
       user.verifyOtp = verifyOtp;
       user.verifyOtpExpiry = verifyOtpExpiry;
       await user.save();
-      
+
       const info = await transporter.sendMail({
         from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
         to: email,
@@ -231,8 +231,8 @@ router.post('/login', async (req, res) => {
         text: `Your verification OTP is: ${verifyOtp}`,
         html: getEmailTemplate("Verify Your Email", "It looks like your account is not verified. Please use the following one-time password to verify your email address.", verifyOtp)
       });
-      return res.status(403).json({ 
-        error: 'ACCOUNT_NOT_VERIFIED', 
+      return res.status(403).json({
+        error: 'ACCOUNT_NOT_VERIFIED',
         email
       });
     }
@@ -247,13 +247,13 @@ router.post('/login', async (req, res) => {
     const uaResult = parser.getResult();
     const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
     const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
-    
+
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
     });
 
     const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    
+
     sendSignInAlert(user, ipAddress, userAgent, session._id);
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, isTwoFactorEnabled: user.isTwoFactorEnabled } });
@@ -265,7 +265,7 @@ router.post('/login', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email, turnstileToken } = req.body;
-    
+
     if (!(await verifyTurnstile(turnstileToken))) {
       return res.status(400).json({ error: 'Security verification failed. Please try again.' });
     }
@@ -291,7 +291,7 @@ router.post('/forgot-password', async (req, res) => {
       html: getEmailTemplate("Reset Your Password", "We received a request to reset your password. Please use the following one-time password to proceed.", resetToken)
     });
 
-    res.json({ 
+    res.json({
       message: 'If an account exists, an email was sent.'
     });
   } catch (error) {
@@ -354,13 +354,13 @@ router.get('/sessions', requireAuth, async (req, res) => {
       id: s._id,
       isCurrent: s._id.toString() === req.user.sessionId
     }));
-    
+
     const currentSession = mapped.find(s => s.isCurrent);
     const inactiveSessions = mapped.filter(s => !s.isCurrent).slice(0, 4);
-    
+
     // Combine them, putting current first
     const finalSessions = currentSession ? [currentSession, ...inactiveSessions] : inactiveSessions;
-    
+
     res.json(finalSessions);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch sessions' });
@@ -374,7 +374,7 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
     if (id === req.user.sessionId) {
       return res.status(400).json({ error: 'Cannot revoke current session. Please log out.' });
     }
-    
+
     await Session.deleteOne({ _id: id, userId: req.user.userId });
     res.json({ message: 'Session revoked' });
   } catch (error) {
@@ -425,7 +425,7 @@ router.post('/verify-2fa', async (req, res) => {
     const uaResult = parser.getResult();
     const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
     const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
-    
+
     const session = await Session.create({
       userId: user._id, userAgent, ipAddress
     });
@@ -495,19 +495,19 @@ router.post('/2fa/fallback', async (req, res) => {
   try {
     const { tempToken } = req.body;
     if (!tempToken) return res.status(400).json({ error: 'Token required' });
-    
+
     let decoded;
     try {
       decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
     } catch (e) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
-    
+
     const user = await User.findById(decoded.tempUserId);
     if (!user || !user.isTwoFactorEnabled) {
       return res.status(400).json({ error: 'Invalid user or 2FA not enabled' });
     }
-    
+
     const fallbackOtp = generateOTP();
     user.verifyOtp = fallbackOtp;
     user.verifyOtpExpiry = new Date(Date.now() + 600000); // 10 minutes
@@ -520,7 +520,7 @@ router.post('/2fa/fallback', async (req, res) => {
       text: `Your 2FA fallback code is: ${fallbackOtp}`,
       html: getEmailTemplate("2FA Fallback Login", "Use the following code to login without your Authenticator app.", fallbackOtp, "This code is valid for 10 minutes.")
     });
-    
+
     res.json({ message: 'Fallback OTP sent to your email.' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to request fallback' });
