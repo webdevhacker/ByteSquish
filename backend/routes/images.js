@@ -1,6 +1,11 @@
 const express = require('express');
 const multer = require('multer');
 const { Jimp, JimpMime } = require('jimp');
+const jpeg = require('jpeg-js');
+const originalDecode = jpeg.decode;
+jpeg.decode = function(data, opts) {
+  return originalDecode(data, { ...opts, maxMemoryUsageInMB: 4096, maxResolutionInMP: 400 });
+};
 const AdmZip = require('adm-zip');
 const fs = require('fs');
 const path = require('path');
