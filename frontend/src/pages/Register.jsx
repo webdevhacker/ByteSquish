@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Loader2, User } from 'lucide-react';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -12,8 +12,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isNotRobot, setIsNotRobot] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -26,24 +25,23 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      addToast('Passwords do not match', 'error');
       return;
     }
     if (!isNotRobot) {
-      setError('Please confirm you are not a robot');
+      addToast('Please confirm you are not a robot', 'error');
       return;
     }
     setLoading(true);
-    setError('');
     
     try {
       const res = await axios.post('/api/auth/register', { name, email, password });
-      setSuccessMsg(res.data.message);
+      addToast(res.data.message, 'success');
       setTimeout(() => {
         navigate('/verify?email=' + encodeURIComponent(res.data.email));
       }, 1500);
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed.');
+      addToast(err.response?.data?.error || 'Registration failed.', 'error');
       setLoading(false);
     }
   };
@@ -55,9 +53,6 @@ export default function Register() {
         <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-purple-400 tracking-widest uppercase mb-2">NEW_OPERATOR</h1>
         <p className="text-sky-500/80 font-mono text-xs tracking-widest">INITIALIZE CLEARANCE PROTOCOLS</p>
       </div>
-
-      {error && <Alert type="error" message={error} className="mb-6" />}
-      {successMsg && <Alert type="success" message={successMsg} className="mb-6" />}
 
       <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         <div>

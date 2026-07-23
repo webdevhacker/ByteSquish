@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, HardDrive, Shield, Download, XCircle, Clock, Smartphone, AlertTriangle, Trash, QrCode, Power } from 'lucide-react';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function Profile() {
   const { user, token, logout } = useAuth();
@@ -12,6 +12,7 @@ export default function Profile() {
   const [images, setImages] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
 
   const [resetStep, setResetStep] = useState(1);
   const [resetOtp, setResetOtp] = useState('');
@@ -59,7 +60,7 @@ export default function Profile() {
       await axios.delete(`/api/auth/sessions/${id}`);
       setSessions(sessions.filter(s => s.id !== id));
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to revoke session');
+      addToast(err.response?.data?.error || 'Failed to revoke session', 'error');
     }
   };
 
@@ -72,7 +73,7 @@ export default function Profile() {
       setResetMessage(res.data.message);
       setResetStep(2);
     } catch (err) {
-      setResetError('Failed to request reset code.');
+      addToast('Failed to request reset code.', 'error');
     }
     setResetLoading(false);
   };
@@ -93,7 +94,7 @@ export default function Profile() {
       setResetOtp('');
       setNewPassword('');
     } catch (err) {
-      setResetError(err.response?.data?.error || 'Failed to reset password');
+      addToast(err.response?.data?.error || 'Failed to reset password', 'error');
     }
     setResetLoading(false);
   };
@@ -104,7 +105,7 @@ export default function Profile() {
       await axios.delete(`/api/images/delete/${id}`);
       setImages(images.filter(img => img.id !== id));
     } catch (err) {
-      alert('Failed to delete image');
+      addToast('Failed to delete image', 'error');
     }
   };
 
@@ -119,7 +120,7 @@ export default function Profile() {
       if (err.response?.data?.error === '2FA is already enabled') {
         setTwoFactorStep(2);
       } else {
-        setTwoFactorError('Failed to generate 2FA');
+        addToast('Failed to generate 2FA', 'error');
       }
     }
   };
@@ -133,7 +134,7 @@ export default function Profile() {
       setTwoFactorStep(0);
       setTwoFactorCode('');
     } catch (err) {
-      setTwoFactorError(err.response?.data?.error || 'Invalid code');
+      addToast(err.response?.data?.error || 'Invalid code', 'error');
     }
   };
 
@@ -146,7 +147,7 @@ export default function Profile() {
       setTwoFactorStep(0);
       setTwoFactorCode('');
     } catch (err) {
-      setTwoFactorError(err.response?.data?.error || 'Invalid code');
+      addToast(err.response?.data?.error || 'Invalid code', 'error');
     }
   };
 
@@ -157,7 +158,7 @@ export default function Profile() {
       await axios.post('/api/auth/request-delete-account');
       setDeleteAccStep(2);
     } catch (err) {
-      setDeleteAccError('Failed to request deletion code.');
+      addToast('Failed to request deletion code.', 'error');
     }
     setDeleteAccLoading(false);
   };
@@ -169,7 +170,7 @@ export default function Profile() {
       await axios.post('/api/auth/delete-account', { otp: deleteAccOtp });
       logout();
     } catch (err) {
-      setDeleteAccError(err.response?.data?.error || 'Failed to delete account');
+      addToast(err.response?.data?.error || 'Failed to delete account', 'error');
       setDeleteAccLoading(false);
     }
   };
@@ -359,8 +360,6 @@ export default function Profile() {
                 </div>
               </form>
             )}
-            {resetMessage && <Alert type="success" message={resetMessage} className="mt-4" />}
-            {resetError && <Alert type="error" message={resetError} className="mt-4" />}
           </div>
 
           <div className="bg-zinc-950/60 backdrop-blur-xl border border-emerald-900/30 hover:border-emerald-500/50 p-6 rounded-2xl shadow-lg relative overflow-hidden transition-all group flex flex-col justify-between">
@@ -435,9 +434,6 @@ export default function Profile() {
                   <button onClick={() => setTwoFactorStep(0)} className="w-full text-zinc-500 text-xs hover:text-zinc-300">CANCEL</button>
                 </div>
               )}
-
-              {twoFactorMessage && <Alert type="success" message={twoFactorMessage} className="mt-4" />}
-              {twoFactorError && <Alert type="error" message={twoFactorError} className="mt-4" />}
             </div>
           </div>
 
@@ -490,7 +486,6 @@ export default function Profile() {
                     </button>
                   </form>
                 )}
-                {deleteAccError && <Alert type="error" message={deleteAccError} className="mt-4" />}
               </div>
             </div>
           </div>

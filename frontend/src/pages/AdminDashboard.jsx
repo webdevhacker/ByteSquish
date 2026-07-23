@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Shield, ShieldAlert, Monitor, Clock, Image as ImageIcon, MapPin, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const { user, token } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
         const res = await axios.get('/api/admin/users', config);
         setUsers(res.data);
       } catch (err) {
-        setError('Failed to fetch user data. Make sure you have admin privileges.');
+        addToast('Failed to fetch user data. Make sure you have admin privileges.', 'error');
       } finally {
         setLoading(false);
       }
@@ -73,11 +74,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {error ? (
-        <Alert type="error" message={error} />
-      ) : (
-        <div className="bg-zinc-950/80 backdrop-blur-xl rounded-2xl border border-purple-900/50 shadow-[0_0_30px_rgba(168,85,247,0.05)] overflow-hidden relative z-10 font-mono">
-          <div className="overflow-x-auto custom-scrollbar">
+      <div className="bg-zinc-950/80 backdrop-blur-xl rounded-2xl border border-purple-900/50 shadow-[0_0_30px_rgba(168,85,247,0.05)] overflow-hidden relative z-10 font-mono">
+        <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left text-xs whitespace-nowrap">
               <thead className="bg-purple-950/20 text-purple-400/80 tracking-widest text-[10px] border-b border-purple-900/30 uppercase">
                 <tr>
@@ -151,7 +149,7 @@ export default function AdminDashboard() {
             </table>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

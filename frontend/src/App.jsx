@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -14,9 +15,10 @@ import TermsAndConditions from './pages/TermsAndConditions';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col bg-[var(--bg-color)] text-[var(--text-color)] font-sans selection:bg-sky-500/30">
+    <ToastProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col bg-[var(--bg-color)] text-[var(--text-color)] font-sans selection:bg-sky-500/30 overflow-x-hidden">
           <Navbar />
           <main className="flex-grow container mx-auto px-4 pt-32 pb-12">
             <Routes>
@@ -35,6 +37,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+    </ToastProvider>
   );
 }
 

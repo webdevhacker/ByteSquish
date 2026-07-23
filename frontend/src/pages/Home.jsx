@@ -3,23 +3,22 @@ import { useAuth } from '../context/AuthContext';
 import { UploadCloud, Settings, Download, X, AlertCircle, FileImage, CheckCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function Home() {
   const { user, token } = useAuth();
+  const { addToast } = useToast();
   const [files, setFiles] = useState([]);
   const [quality, setQuality] = useState(80);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [downloadFormat, setDownloadFormat] = useState('zip');
-  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
   const maxFiles = user ? 20 : 10;
 
   const handleFiles = (newFiles) => {
-    setError('');
     setResult(null);
     const validFiles = Array.from(newFiles).filter(file => file.type.startsWith('image/'));
     validFiles.forEach(file => {
@@ -27,7 +26,7 @@ export default function Home() {
     });
     
     if (files.length + validFiles.length > maxFiles) {
-      setError(`Upload limit reached. You can only upload up to ${maxFiles} images.`);
+      addToast(`Upload limit reached. You can only upload up to ${maxFiles} images.`, 'error');
       const allowedCount = maxFiles - files.length;
       setFiles(prev => [...prev, ...validFiles.slice(0, allowedCount)]);
     } else {
@@ -50,7 +49,6 @@ export default function Home() {
     
     setLoading(true);
     setProgress(0);
-    setError('');
     setResult(null);
 
     const formData = new FormData();
@@ -133,12 +131,12 @@ export default function Home() {
         const text = await err.response.data.text();
         try {
           const json = JSON.parse(text);
-          setError(json.error || 'Compression failed');
+          addToast(json.error || 'Compression failed', 'error');
         } catch(e) {
-           setError('Compression failed due to an unknown error.');
+           addToast('Compression failed due to an unknown error.', 'error');
         }
       } else {
-        setError(err.response?.data?.error || 'Failed to compress images. Ensure server is running.');
+        addToast(err.response?.data?.error || 'Failed to compress images. Ensure server is running.', 'error');
       }
     } finally {
       setLoading(false);
@@ -180,10 +178,6 @@ export default function Home() {
             INITIALIZE AUTH
           </Link>
         </div>
-      )}
-
-      {error && (
-        <Alert type="error" message={error} />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

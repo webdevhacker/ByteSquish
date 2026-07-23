@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { KeyRound, Loader2, CheckCircle } from 'lucide-react';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -12,8 +12,7 @@ export default function VerifyEmail() {
   const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const { addToast } = useToast();
   
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -21,30 +20,27 @@ export default function VerifyEmail() {
   const handleVerify = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     
     try {
       const res = await axios.post('/api/auth/verify-email', { email, otp });
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Verification failed. OTP may be invalid or expired.');
+      addToast(err.response?.data?.error || 'Verification failed. OTP may be invalid or expired.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResend = async () => {
-    setError('');
-    setSuccess('');
     try {
       // We can use forgot-password or a new resend-otp endpoint.
       // Since login() generates a new OTP if unverified, we can just call login() with dummy pass? No, forgot-password is safer for this demo.
       // Wait, forgot-password generates a resetToken. That's not the verifyOtp. 
       // I should add a quick resend endpoint or just tell them to try logging in to trigger a new OTP.
-      setSuccess('To resend OTP, please try logging in with your password. A new OTP will be emailed to you.');
+      addToast('To resend OTP, please try logging in with your password. A new OTP will be emailed to you.', 'success');
     } catch (err) {
-      setError('Failed to resend OTP.');
+      addToast('Failed to resend OTP.', 'error');
     }
   };
 
@@ -60,9 +56,6 @@ export default function VerifyEmail() {
           AUTH CODE SENT TO: <br/><strong className="text-sky-400">{email}</strong>
         </p>
       </div>
-
-      {error && <Alert type="error" message={error} className="mb-6" />}
-      {success && <Alert type="success" message={success} className="mb-6" />}
 
       <form onSubmit={handleVerify} className="space-y-6 relative z-10">
         {!initialEmail && (

@@ -3,14 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Loader2 } from 'lucide-react';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isNotRobot, setIsNotRobot] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { addToast } = useToast();
   
   const [requires2FA, setRequires2FA] = useState(false);
   const [tempToken, setTempToken] = useState('');
@@ -28,11 +28,10 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isNotRobot) {
-      setError('Please confirm you are not a robot');
+      addToast('Please confirm you are not a robot', 'error');
       return;
     }
     setLoading(true);
-    setError('');
     
     try {
       const res = await axios.post('/api/auth/login', { email, password });
@@ -50,7 +49,7 @@ export default function Login() {
         navigate('/verify?email=' + encodeURIComponent(email));
         return;
       }
-      setError(err.response?.data?.error || 'Failed to login. Please check credentials.');
+      addToast(err.response?.data?.error || 'Failed to login. Please check credentials.', 'error');
     } finally {
       setLoading(false);
     }
@@ -59,13 +58,12 @@ export default function Login() {
   const handleVerify2FA = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       const res = await axios.post('/api/auth/verify-2fa', { tempToken, code: twoFactorCode });
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid 2FA code');
+      addToast(err.response?.data?.error || 'Invalid 2FA code', 'error');
     } finally {
       setLoading(false);
     }
@@ -78,8 +76,6 @@ export default function Login() {
         <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-purple-400 tracking-widest uppercase mb-2">AUTH_PORTAL</h1>
         <p className="text-sky-500/80 font-mono text-xs tracking-widest">ESTABLISH SECURE CONNECTION</p>
       </div>
-
-      {error && <Alert type="error" message={error} className="mb-6" />}
 
       {requires2FA ? (
         <form onSubmit={handleVerify2FA} className="space-y-6 relative z-10">
@@ -107,7 +103,6 @@ export default function Login() {
             onClick={() => {
               setRequires2FA(false);
               setTwoFactorCode('');
-              setError('');
             }}
             className="w-full text-xs text-zinc-500 hover:text-zinc-300 text-center font-mono tracking-widest"
           >

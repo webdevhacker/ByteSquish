@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, CheckCircle, Mail, KeyRound } from 'lucide-react';
-import Alert from '../components/Alert';
+import { useToast } from '../context/ToastContext';
 
 export default function ResetPassword() {
   const [step, setStep] = useState(1); // 1: Request OTP, 2: Submit OTP
@@ -12,27 +12,27 @@ export default function ResetPassword() {
   const [isNotRobot, setIsNotRobot] = useState(false);
   
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
   
   const navigate = useNavigate();
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     if (!isNotRobot) {
-      setError('Please confirm you are not a robot');
+      addToast('Please confirm you are not a robot', 'error');
       return;
     }
     setMessage('');
-    setError('');
     setLoading(true);
     
     try {
       const res = await axios.post('/api/auth/forgot-password', { email });
       setMessage(res.data.message);
+      addToast(res.data.message, 'success');
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to request password reset');
+      addToast(err.response?.data?.error || 'Failed to request password reset', 'error');
     }
     setLoading(false);
   };
@@ -40,11 +40,10 @@ export default function ResetPassword() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!isNotRobot) {
-      setError('Please confirm you are not a robot');
+      addToast('Please confirm you are not a robot', 'error');
       return;
     }
     setMessage('');
-    setError('');
     setLoading(true);
 
     try {
@@ -54,9 +53,10 @@ export default function ResetPassword() {
         newPassword: password
       });
       setMessage(res.data.message);
+      addToast(res.data.message, 'success');
       setStep(3); // Success step
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to reset password');
+      addToast(err.response?.data?.error || 'Failed to reset password', 'error');
     }
     setLoading(false);
   };
@@ -73,9 +73,6 @@ export default function ResetPassword() {
           {step === 1 ? 'INPUT OPERATOR ID FOR RECOVERY' : step === 2 ? 'INPUT OVERRIDE CODE & NEW KEY' : 'ACCESS_KEY UPDATED SECURELY'}
         </p>
       </div>
-
-      {message && step !== 3 && <Alert type="success" message={message} className="mb-6" />}
-      {error && <Alert type="error" message={error} className="mb-6" />}
 
       {step === 1 && (
         <form onSubmit={handleRequestOtp} className="space-y-6 relative z-10">
