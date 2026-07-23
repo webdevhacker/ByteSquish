@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Image as ImageIcon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { LogOut, Image as ImageIcon, Sun, Moon } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="fixed top-0 inset-x-0 z-50 pt-4 flex justify-center w-full pointer-events-none font-tech">
-      <header className="pointer-events-auto backdrop-blur-xl bg-zinc-950/70 border border-zinc-800/80 transition-colors duration-300 rounded-2xl shadow-[0_5px_30px_rgba(56,189,248,0.1)] w-[95%] max-w-6xl relative overflow-hidden group">
-        <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
-        <div className="absolute bottom-0 w-full h-[1px] bg-zinc-800"></div>
+      <header className="pointer-events-auto backdrop-blur-xl bg-white/80 dark:bg-zinc-950/70 border border-zinc-200 dark:border-zinc-800/80 transition-colors duration-300 rounded-2xl shadow-[0_5px_30px_rgba(56,189,248,0.05)] dark:shadow-[0_5px_30px_rgba(56,189,248,0.1)] w-[95%] max-w-6xl relative overflow-hidden group">
+        <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-sky-500/30 dark:via-sky-500/50 to-transparent"></div>
+        <div className="absolute bottom-0 w-full h-[1px] bg-zinc-200 dark:bg-zinc-800"></div>
         <div className="px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
             <ImageIcon size={24} className="text-sky-500 group-hover:scale-110 transition-transform duration-300" />
@@ -19,23 +21,30 @@ export default function Navbar() {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-6">
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 sm:p-2 rounded-lg bg-zinc-100 dark:bg-sky-950/30 border border-zinc-200 dark:border-sky-500/30 text-zinc-600 dark:text-sky-400 hover:text-zinc-900 dark:hover:text-sky-300 hover:border-zinc-300 dark:hover:border-sky-500/50 transition-all flex items-center justify-center"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             {user ? (
               <div className="flex items-center gap-2 sm:gap-4">
                 {user.isAdmin && (
-                  <Link to="/admin" className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-purple-400 bg-purple-950/30 px-2 sm:px-3 py-1.5 rounded-lg border border-purple-500/30 hover:bg-purple-900/50 hover:shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all">
+                  <Link to="/admin" className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-950/30 px-2 sm:px-3 py-1.5 rounded-lg border border-purple-300 dark:border-purple-500/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 hover:shadow-[0_0_10px_rgba(168,85,247,0.1)] dark:hover:shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_5px_rgba(168,85,247,0.8)]"></span>
                     <span className="hidden sm:inline">ROOT_ACCESS</span>
                     <span className="sm:hidden">ROOT</span>
                   </Link>
                 )}
-                <Link to="/profile" className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-emerald-400 bg-emerald-950/30 px-2 sm:px-3 py-1.5 rounded-lg border border-emerald-500/30 hover:bg-emerald-900/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all">
+                <Link to="/profile" className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/30 px-2 sm:px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-500/30 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.1)] dark:hover:shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all">
                   <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.8)]"></span>
                   <span className="hidden sm:inline">USER_NODE</span>
                   <span className="sm:hidden">NODE</span>
                 </Link>
                 <button 
                   onClick={logout}
-                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-red-950/20 hover:bg-red-900/40 text-red-400 font-mono tracking-widest text-[10px] sm:text-xs border border-red-900/50 hover:border-red-500/50 hover:shadow-[0_0_10px_rgba(239,68,68,0.3)] transition-all"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-red-100 dark:bg-red-950/20 hover:bg-red-200 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-mono tracking-widest text-[10px] sm:text-xs border border-red-300 dark:border-red-900/50 hover:border-red-400 dark:hover:border-red-500/50 hover:shadow-[0_0_10px_rgba(239,68,68,0.1)] dark:hover:shadow-[0_0_10px_rgba(239,68,68,0.3)] transition-all"
                 >
                   <LogOut size={14} className="sm:w-4 sm:h-4" />
                   <span className="hidden xs:inline">DISCONNECT</span>
@@ -43,10 +52,10 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
-                <Link to="/login" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-sky-400 hover:text-sky-300 border border-sky-900/50 rounded-lg hover:border-sky-500/50 hover:bg-sky-950/30 transition-all">
+                <Link to="/login" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 border border-sky-300 dark:border-sky-900/50 rounded-lg hover:border-sky-400 dark:hover:border-sky-500/50 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all">
                   LOGIN
                 </Link>
-                <Link to="/register" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-sky-600/20 border border-sky-500/50 hover:bg-sky-600/40 text-sky-400 rounded-lg shadow-[0_0_15px_rgba(14,165,233,0.2)] transition-all hover:shadow-[0_0_20px_rgba(14,165,233,0.4)]">
+                <Link to="/register" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-sky-100 dark:bg-sky-600/20 border border-sky-300 dark:border-sky-500/50 hover:bg-sky-200 dark:hover:bg-sky-600/40 text-sky-600 dark:text-sky-400 rounded-lg shadow-[0_0_15px_rgba(14,165,233,0.1)] dark:shadow-[0_0_15px_rgba(14,165,233,0.2)] transition-all hover:shadow-[0_0_20px_rgba(14,165,233,0.2)] dark:hover:shadow-[0_0_20px_rgba(14,165,233,0.4)]">
                   INITIALIZE
                 </Link>
               </div>

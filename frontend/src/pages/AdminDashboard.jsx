@@ -54,30 +54,30 @@ export default function AdminDashboard() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 relative z-10">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <Shield className="text-purple-500" size={32} />
-            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-sky-500 to-purple-400 animate-gradient tracking-widest drop-shadow-sm uppercase">
+            <Shield className="text-purple-600 dark:text-purple-500 transition-colors" size={32} />
+            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-sky-600 to-purple-500 dark:from-purple-400 dark:via-sky-500 dark:to-purple-400 animate-gradient tracking-widest drop-shadow-sm uppercase">
               ROOT_CONTROL_CENTER
             </h1>
           </div>
-          <p className="text-purple-500/80 font-mono text-xs tracking-widest uppercase">MONITOR USER ACTIVITY, SESSIONS, AND ACCESS LOGS.</p>
+          <p className="text-purple-600/80 dark:text-purple-500/80 font-mono text-xs tracking-widest uppercase transition-colors">MONITOR USER ACTIVITY, SESSIONS, AND ACCESS LOGS.</p>
         </div>
         
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-500/50 group-focus-within:text-purple-400 transition-colors" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-600/50 dark:text-purple-500/50 group-focus-within:text-purple-600 dark:group-focus-within:text-purple-400 transition-colors" size={18} />
           <input 
             type="text" 
             placeholder="SEARCH_USERS..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full md:w-64 bg-zinc-900/50 border border-zinc-800 rounded-xl py-2 pl-10 pr-4 text-xs font-mono tracking-widest text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all uppercase placeholder:text-zinc-600"
+            className="w-full md:w-64 bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-xl py-2 pl-10 pr-4 text-xs font-mono tracking-widest text-zinc-800 dark:text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all uppercase placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
           />
         </div>
       </div>
 
-      <div className="bg-zinc-950/80 backdrop-blur-xl rounded-2xl border border-purple-900/50 shadow-[0_0_30px_rgba(168,85,247,0.05)] overflow-hidden relative z-10 font-mono">
+      <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl rounded-2xl border border-purple-200 dark:border-purple-900/50 shadow-[0_0_30px_rgba(168,85,247,0.05)] overflow-hidden relative z-10 font-mono transition-colors duration-300">
         <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left text-xs whitespace-nowrap">
-              <thead className="bg-purple-950/20 text-purple-400/80 tracking-widest text-[10px] border-b border-purple-900/30 uppercase">
+              <thead className="bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400/80 tracking-widest text-[10px] border-b border-purple-200 dark:border-purple-900/30 uppercase transition-colors">
                 <tr>
                   <th className="px-6 py-4 font-bold">USER_ID</th>
                   <th className="px-6 py-4 font-bold">STATUS</th>
@@ -87,57 +87,57 @@ export default function AdminDashboard() {
                   <th className="px-6 py-4 font-bold">INIT_TIME</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/50">
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/50 transition-colors">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-zinc-600 tracking-widest text-[10px] uppercase">NO_RECORDS_FOUND.</td>
+                    <td colSpan="6" className="px-6 py-8 text-center text-zinc-500 dark:text-zinc-600 tracking-widest text-[10px] uppercase">NO_RECORDS_FOUND.</td>
                   </tr>
                 ) : (
                   filteredUsers.map((u) => {
                     const lastSession = u.sessions && u.sessions.length > 0 ? u.sessions[0] : null;
                     return (
-                      <tr key={u.id} className="hover:bg-purple-900/10 transition-colors group">
+                      <tr key={u.id} className="hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors group">
                         <td className="px-6 py-4">
-                          <div className="font-bold text-purple-100 group-hover:text-white transition-colors">{u.name}</div>
+                          <div className="font-bold text-zinc-800 dark:text-purple-100 group-hover:text-purple-700 dark:group-hover:text-white transition-colors">{u.name}</div>
                           <div className="text-zinc-500 text-[10px] mt-0.5">{u.email}</div>
-                          {u.isAdmin && <span className="inline-block mt-1.5 bg-purple-950/50 text-purple-400 border border-purple-500/30 text-[9px] px-1.5 py-0.5 rounded font-bold tracking-widest uppercase shadow-[0_0_5px_rgba(168,85,247,0.2)]">ROOT</span>}
+                          {u.isAdmin && <span className="inline-block mt-1.5 bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 border border-purple-300 dark:border-purple-500/30 text-[9px] px-1.5 py-0.5 rounded font-bold tracking-widest uppercase shadow-[0_0_5px_rgba(168,85,247,0.1)] dark:shadow-[0_0_5px_rgba(168,85,247,0.2)]">ROOT</span>}
                         </td>
                         <td className="px-6 py-4">
                           {u.isVerified ? (
-                            <span className="bg-emerald-950/30 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">VERIFIED</span>
+                            <span className="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest transition-colors">VERIFIED</span>
                           ) : (
-                            <span className="bg-yellow-950/30 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">PENDING</span>
+                            <span className="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest transition-colors">PENDING</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5 text-sky-400 font-bold">
-                            <ImageIcon size={12} className="text-sky-500/50" />
+                          <div className="flex items-center justify-center gap-1.5 text-sky-600 dark:text-sky-400 font-bold transition-colors">
+                            <ImageIcon size={12} className="text-sky-400 dark:text-sky-500/50" />
                             {u.totalImages}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           {lastSession ? (
-                            <div className="flex items-center gap-2 text-zinc-400">
-                              <MapPin size={12} className="text-zinc-600" />
+                            <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 transition-colors">
+                              <MapPin size={12} className="text-zinc-400 dark:text-zinc-600" />
                               <span className="font-mono text-[10px] tracking-wider">{lastSession.ipAddress}</span>
                             </div>
                           ) : (
-                            <span className="text-zinc-600 text-[10px]">-</span>
+                            <span className="text-zinc-400 dark:text-zinc-600 text-[10px] transition-colors">-</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
                           {lastSession ? (
-                            <div className="flex items-center gap-2 text-zinc-400 max-w-[200px]" title={lastSession.userAgent}>
-                              <Monitor size={12} className="text-zinc-600 shrink-0" />
+                            <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 max-w-[200px] transition-colors" title={lastSession.userAgent}>
+                              <Monitor size={12} className="text-zinc-400 dark:text-zinc-600 shrink-0" />
                               <span className="text-[10px] truncate tracking-wider">{lastSession.userAgent}</span>
                             </div>
                           ) : (
-                            <span className="text-zinc-600 text-[10px]">-</span>
+                            <span className="text-zinc-400 dark:text-zinc-600 text-[10px] transition-colors">-</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-zinc-500 text-[10px] tracking-wider">
+                        <td className="px-6 py-4 text-zinc-500 text-[10px] tracking-wider transition-colors">
                           <div className="flex items-center gap-1.5">
-                            <Clock size={10} className="text-zinc-600" />
+                            <Clock size={10} className="text-zinc-400 dark:text-zinc-600" />
                             {new Date(u.createdAt).toLocaleDateString()}
                           </div>
                         </td>

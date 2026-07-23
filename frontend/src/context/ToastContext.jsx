@@ -42,7 +42,7 @@ export const ToastProvider = ({ children }) => {
             <Alert 
               type={toast.type} 
               message={toast.message} 
-              className="shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-zinc-700 w-full"
+              className="shadow-[0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-zinc-300 dark:border-zinc-700 w-full"
             />
           </div>
         ))}

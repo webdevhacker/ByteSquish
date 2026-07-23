@@ -10,9 +10,9 @@ export default function Alert({ type = 'error', message, className = '' }) {
   const baseClasses = "relative overflow-hidden p-4 rounded-xl flex items-start gap-3 z-10 font-mono text-xs tracking-widest uppercase shadow-lg border backdrop-blur-xl transition-all duration-300 animate-fade-in-up";
   
   const typeClasses = {
-    error: "bg-red-950/40 border-red-500/50 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.15)]",
-    success: "bg-emerald-950/40 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]",
-    warning: "bg-yellow-950/40 border-yellow-500/50 text-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.15)]",
+    error: "bg-red-100/90 dark:bg-red-950/40 border-red-300 dark:border-red-500/50 text-red-700 dark:text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.1)] dark:shadow-[0_0_20px_rgba(239,68,68,0.15)]",
+    success: "bg-emerald-100/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/50 text-emerald-700 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)] dark:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+    warning: "bg-yellow-100/90 dark:bg-yellow-950/40 border-yellow-300 dark:border-yellow-500/50 text-yellow-700 dark:text-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.1)] dark:shadow-[0_0_20px_rgba(234,179,8,0.15)]",
   };
 
   const Icon = isError ? ShieldAlert : isSuccess ? CheckCircle : AlertTriangle;

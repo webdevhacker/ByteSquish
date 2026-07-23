@@ -168,7 +168,7 @@ router.post('/verify-email', async (req, res) => {
     
     sendSignInAlert(user, ipAddress, userAgent, session._id);
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, isTwoFactorEnabled: user.isTwoFactorEnabled } });
   } catch (error) {
     res.status(500).json({ error: 'Server error during verification' });
   }
@@ -223,7 +223,7 @@ router.post('/login', async (req, res) => {
     
     sendSignInAlert(user, ipAddress, userAgent, session._id);
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, isTwoFactorEnabled: user.isTwoFactorEnabled } });
   } catch (error) {
     res.status(500).json({ error: 'Server error during login' });
   }
@@ -357,15 +357,25 @@ router.post('/verify-2fa', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user or 2FA not enabled' });
     }
 
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: 'base32',
-      token: code,
-      window: 1 // Allow 30 seconds drift
-    });
+    if (code.length === 6) {
+      if (user.verifyOtp === code && user.verifyOtpExpiry > new Date()) {
+        user.verifyOtp = null;
+        user.verifyOtpExpiry = null;
+        await user.save();
+      } else {
+        const verified = speakeasy.totp.verify({
+          secret: user.twoFactorSecret,
+          encoding: 'base32',
+          token: code,
+          window: 1 // Allow 30 seconds drift
+        });
 
-    if (!verified) {
-      return res.status(401).json({ error: 'Invalid 2FA code' });
+        if (!verified) {
+          return res.status(401).json({ error: 'Invalid 2FA code' });
+        }
+      }
+    } else {
+      return res.status(401).json({ error: 'Invalid 2FA code format' });
     }
 
     const rawUA = req.headers['user-agent'] || '';
@@ -381,7 +391,7 @@ router.post('/verify-2fa', async (req, res) => {
     const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     sendSignInAlert(user, ipAddress, userAgent, session._id);
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, isTwoFactorEnabled: user.isTwoFactorEnabled } });
   } catch (error) {
     res.status(500).json({ error: 'Server error during 2FA verification' });
   }
@@ -436,6 +446,42 @@ router.post('/delete-account', requireAuth, async (req, res) => {
     res.json({ message: 'Account and all data successfully deleted.' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
+router.post('/2fa/fallback', async (req, res) => {
+  try {
+    const { tempToken } = req.body;
+    if (!tempToken) return res.status(400).json({ error: 'Token required' });
+    
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    } catch (e) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+    
+    const user = await User.findById(decoded.tempUserId);
+    if (!user || !user.isTwoFactorEnabled) {
+      return res.status(400).json({ error: 'Invalid user or 2FA not enabled' });
+    }
+    
+    const fallbackOtp = generateOTP();
+    user.verifyOtp = fallbackOtp;
+    user.verifyOtpExpiry = new Date(Date.now() + 600000); // 10 minutes
+    await user.save();
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
+      to: user.email,
+      subject: "2FA Fallback Code",
+      text: `Your 2FA fallback code is: ${fallbackOtp}`,
+      html: getEmailTemplate("2FA Fallback Login", "Use the following code to login without your Authenticator app.", fallbackOtp, "This code is valid for 10 minutes.")
+    });
+    
+    res.json({ message: 'Fallback OTP sent to your email.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to request fallback' });
   }
 });
 

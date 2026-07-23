@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-800/80 pt-16 pb-8 mt-auto font-tech relative overflow-hidden">
+    <footer className="bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-200 dark:border-zinc-800/80 pt-16 pb-8 mt-auto font-tech relative overflow-hidden transition-colors duration-300">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-sky-500/30 to-transparent"></div>
       <div className="container mx-auto px-6 max-w-6xl relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -16,7 +16,7 @@ export default function Footer() {
                 BYTE.SQUISH_
               </span>
             </Link>
-            <p className="text-zinc-500 text-xs max-w-sm leading-relaxed font-mono">
+            <p className="text-zinc-600 dark:text-zinc-500 text-xs max-w-sm leading-relaxed font-mono transition-colors">
               // HIGH-PERFORMANCE IMAGE OPTIMIZATION ALGORITHMS. <br/>
               REDUCE PAYLOAD SIZE. RETAIN VISUAL FIDELITY.
             </p>
@@ -24,8 +24,8 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h4 className="font-bold text-zinc-300 mb-4 font-mono tracking-widest text-xs uppercase border-b border-zinc-800/80 pb-2">Navigation</h4>
-            <ul className="space-y-2 text-xs font-mono text-zinc-500 tracking-widest">
+            <h4 className="font-bold text-zinc-800 dark:text-zinc-300 mb-4 font-mono tracking-widest text-xs uppercase border-b border-zinc-300 dark:border-zinc-800/80 pb-2 transition-colors">Navigation</h4>
+            <ul className="space-y-2 text-xs font-mono text-zinc-600 dark:text-zinc-500 tracking-widest transition-colors">
               <li><Link to="/" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./HOME</Link></li>
               <li><Link to="/login" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./AUTH/LOGIN</Link></li>
               <li><Link to="/register" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./AUTH/REGISTER</Link></li>
@@ -34,15 +34,15 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-bold text-zinc-300 mb-4 font-mono tracking-widest text-xs uppercase border-b border-zinc-800/80 pb-2">Legal</h4>
-            <ul className="space-y-2 text-xs font-mono text-zinc-500 tracking-widest">
+            <h4 className="font-bold text-zinc-800 dark:text-zinc-300 mb-4 font-mono tracking-widest text-xs uppercase border-b border-zinc-300 dark:border-zinc-800/80 pb-2 transition-colors">Legal</h4>
+            <ul className="space-y-2 text-xs font-mono text-zinc-600 dark:text-zinc-500 tracking-widest transition-colors">
               <li><Link to="/privacy-policy" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./PRIVACY_POLICY</Link></li>
               <li><Link to="/terms-and-conditions" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./TERMS_CONDITIONS</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-zinc-800/80 pt-8 flex flex-col md:flex-row items-center justify-between text-[10px] font-mono text-zinc-600 tracking-widest">
+        <div className="border-t border-zinc-300 dark:border-zinc-800/80 pt-8 flex flex-col md:flex-row items-center justify-between text-[10px] font-mono text-zinc-500 dark:text-zinc-600 tracking-widest transition-colors">
           <p>© {new Date().getFullYear()} BYTESQUISH SYSTEM. ALL RIGHTS RESERVED.</p>
           <p className="flex items-center gap-1 mt-2 md:mt-0">
             ENGINEERED WITH <Heart size={10} className="text-red-500 animate-pulse" /> BY <a href="https://isharankumar.com" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors underline decoration-dotted underline-offset-4 ml-1">SHARAN KUMAR</a>
