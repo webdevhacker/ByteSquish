@@ -52,11 +52,8 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
-                <Link to="/login" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 border border-sky-300 dark:border-sky-900/50 rounded-lg hover:border-sky-400 dark:hover:border-sky-500/50 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-all">
+                <Link to="/login" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-sky-100 dark:bg-sky-600/20 border border-sky-300 dark:border-sky-500/50 hover:bg-sky-200 dark:hover:bg-sky-600/40 text-sky-600 dark:text-sky-400 rounded-lg shadow-[0_0_15px_rgba(14,165,233,0.1)] dark:shadow-[0_0_15px_rgba(14,165,233,0.2)] transition-all hover:shadow-[0_0_20px_rgba(14,165,233,0.2)] dark:hover:shadow-[0_0_20px_rgba(14,165,233,0.4)]">
                   LOGIN
-                </Link>
-                <Link to="/register" className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-sky-100 dark:bg-sky-600/20 border border-sky-300 dark:border-sky-500/50 hover:bg-sky-200 dark:hover:bg-sky-600/40 text-sky-600 dark:text-sky-400 rounded-lg shadow-[0_0_15px_rgba(14,165,233,0.1)] dark:shadow-[0_0_15px_rgba(14,165,233,0.2)] transition-all hover:shadow-[0_0_20px_rgba(14,165,233,0.2)] dark:hover:shadow-[0_0_20px_rgba(14,165,233,0.4)]">
-                  INITIALIZE
                 </Link>
               </div>
             )}
