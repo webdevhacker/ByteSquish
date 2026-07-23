@@ -48,53 +48,54 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 font-tech">
-      <div className="text-center mb-8">
-        <div className="mx-auto bg-sky-100 dark:bg-sky-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-          <KeyRound className="text-sky-500" size={32} />
+    <div className="max-w-md mx-auto bg-zinc-950/80 backdrop-blur-xl p-8 rounded-2xl shadow-[0_0_40px_rgba(56,189,248,0.1)] border border-sky-900/50 relative overflow-hidden font-tech mt-10">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 via-purple-500 to-sky-500"></div>
+      <div className="text-center mb-10 relative z-10">
+        <div className="mx-auto bg-sky-950/30 border border-sky-500/30 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+          <KeyRound className="text-sky-400" size={32} />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Verify Your Email</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          We sent a 6-digit code to <strong className="text-sky-500">{email}</strong>
+        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-purple-400 tracking-widest uppercase mb-2">VERIFY_CHANNEL</h1>
+        <p className="text-zinc-400 font-mono text-xs mt-2">
+          AUTH CODE SENT TO: <br/><strong className="text-sky-400">{email}</strong>
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm text-center">
+        <div className="mb-6 p-4 bg-red-950/50 border border-red-900 text-red-400 rounded-lg text-xs font-mono text-center">
           {error}
         </div>
       )}
       
       {success && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg text-sm text-center flex flex-col items-center gap-2">
+        <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-900 text-emerald-400 rounded-lg text-xs font-mono text-center flex flex-col items-center gap-2">
           <CheckCircle size={24} />
           {success}
         </div>
       )}
 
-      <form onSubmit={handleVerify} className="space-y-6">
+      <form onSubmit={handleVerify} className="space-y-6 relative z-10">
         {!initialEmail && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+            <label className="block text-xs font-bold text-sky-500 mb-2 font-mono tracking-widest">COMMUNICATION_LINK (EMAIL)</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all dark:text-white"
+              className="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 outline-none transition-all text-sky-100 font-mono"
             />
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">6-Digit Code</label>
+          <label className="block text-xs font-bold text-sky-500 mb-2 text-center font-mono tracking-widest">6-DIGIT_AUTH_CODE</label>
           <input
             type="text"
             required
             maxLength={6}
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-            className="w-full text-center tracking-[0.5em] text-2xl px-4 py-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all dark:text-white font-mono"
+            className="w-full text-center tracking-[1em] text-2xl px-4 py-4 rounded-xl border border-zinc-800 bg-zinc-900/80 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 outline-none transition-all text-sky-400 font-mono shadow-inner"
             placeholder="000000"
           />
         </div>
@@ -102,16 +103,16 @@ export default function VerifyEmail() {
         <button
           type="submit"
           disabled={loading || otp.length !== 6}
-          className="w-full flex items-center justify-center py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-medium shadow-lg shadow-sky-500/30 transition-all disabled:opacity-70"
+          className="w-full flex items-center justify-center py-4 px-4 bg-sky-600/20 hover:bg-sky-600/40 border border-sky-500/50 text-sky-400 rounded-xl font-bold tracking-widest shadow-[0_0_15px_rgba(56,189,248,0.2)] transition-all disabled:opacity-50"
         >
-          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Verify & Continue'}
+          {loading ? <Loader2 className="animate-spin" size={20} /> : 'CONFIRM_VERIFICATION'}
         </button>
       </form>
       
-      <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-        Didn't receive the code?{' '}
-        <button onClick={handleResend} className="text-sky-600 dark:text-sky-400 hover:underline font-medium">
-          Click for help
+      <p className="mt-8 text-center text-xs font-mono text-zinc-500 tracking-widest relative z-10">
+        NO_CODE_RECEIVED?{' '}
+        <button onClick={handleResend} className="text-sky-400 hover:text-sky-300 hover:shadow-[0_0_10px_rgba(56,189,248,0.5)] transition-all">
+          TRANSMIT_AGAIN
         </button>
       </p>
     </div>

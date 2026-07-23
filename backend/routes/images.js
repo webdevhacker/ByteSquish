@@ -170,4 +170,27 @@ router.get('/download/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Delete a specific image
+router.delete('/delete/:id', authenticateToken, async (req, res) => {
+  try {
+    const image = await Image.findById(req.params.id);
+
+    if (!image || image.userId.toString() !== req.user.userId.toString()) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    const filePath = path.join(uploadsDir, image.fileName);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    await Image.deleteOne({ _id: image._id });
+
+    res.json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
+  }
+});
+
 module.exports = router;

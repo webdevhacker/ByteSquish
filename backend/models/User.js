@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },
   isAdmin: { type: Boolean, default: false },
+  twoFactorSecret: { type: String },
+  isTwoFactorEnabled: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

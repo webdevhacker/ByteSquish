@@ -61,100 +61,101 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 font-tech">
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Lock className="text-sky-500" size={24} />
+    <div className="max-w-md mx-auto bg-zinc-950/80 backdrop-blur-xl p-8 rounded-2xl shadow-[0_0_40px_rgba(168,85,247,0.1)] border border-purple-900/50 relative overflow-hidden font-tech mt-10">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-sky-500 to-purple-500"></div>
+      <div className="text-center mb-10 relative z-10">
+        <div className="w-16 h-16 bg-purple-950/30 border border-purple-500/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+          <Lock className="text-purple-400" size={32} />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reset Password</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          {step === 1 ? 'Enter your email to receive a reset code' : step === 2 ? 'Enter the 6-digit code and your new password' : 'Password reset successful'}
+        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400 tracking-widest uppercase mb-2">RECOVER_ACCESS</h1>
+        <p className="text-zinc-400 font-mono text-xs mt-2">
+          {step === 1 ? 'INPUT OPERATOR ID FOR RECOVERY' : step === 2 ? 'INPUT OVERRIDE CODE & NEW KEY' : 'ACCESS_KEY UPDATED SECURELY'}
         </p>
       </div>
 
       {message && step !== 3 && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg text-sm text-center">
+        <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-900 text-emerald-400 rounded-lg text-xs font-mono text-center">
           {message}
         </div>
       )}
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm text-center">
+        <div className="mb-6 p-4 bg-red-950/50 border border-red-900 text-red-400 rounded-lg text-xs font-mono text-center">
           {error}
         </div>
       )}
 
       {step === 1 && (
-        <form onSubmit={handleRequestOtp} className="space-y-6">
+        <form onSubmit={handleRequestOtp} className="space-y-6 relative z-10">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+            <label className="block text-xs font-bold text-purple-500 mb-2 font-mono tracking-widest">COMMUNICATION_LINK (EMAIL)</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600" size={18} />
               <input 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all dark:text-white"
-                placeholder="you@example.com"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 outline-none transition-all text-purple-100 font-mono"
+                placeholder="operator@system.net"
                 required
               />
             </div>
           </div>
           
-          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl">
+          <div className="flex items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
             <button
               type="button"
               onClick={() => setIsNotRobot(!isNotRobot)}
-              className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-sky-500 border-sky-500' : 'border-gray-400 dark:border-zinc-500 hover:border-sky-500'}`}
+              className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-purple-500 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'border-zinc-600 hover:border-purple-500/50'}`}
             >
               {isNotRobot && (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
             </button>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">I am not a robot</span>
+            <span className="text-xs font-mono tracking-widest text-zinc-400">HUMAN_VERIFICATION</span>
             <div className="ml-auto flex items-center justify-center">
-               <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin opacity-20"></div>
+               <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin opacity-40"></div>
             </div>
           </div>
 
           <button 
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold shadow-lg transition-all disabled:opacity-50"
+            className="w-full py-4 px-4 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 rounded-xl font-bold tracking-widest shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all disabled:opacity-50"
           >
-            {loading ? 'Sending...' : 'Request Code'}
+            {loading ? 'TRANSMITTING...' : 'REQUEST_RECOVERY_CODE'}
           </button>
         </form>
       )}
 
       {step === 2 && (
-        <form onSubmit={handleResetPassword} className="space-y-6">
+        <form onSubmit={handleResetPassword} className="space-y-6 relative z-10">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">6-Digit Code</label>
+            <label className="block text-xs font-bold text-purple-500 mb-2 font-mono tracking-widest">6-DIGIT_RECOVERY_CODE</label>
             <div className="relative">
-              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600" size={18} />
               <input 
                 type="text" 
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all dark:text-white tracking-widest font-mono"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 outline-none transition-all text-purple-400 tracking-[0.5em] font-mono shadow-inner"
                 placeholder="000000"
                 required
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+            <label className="block text-xs font-bold text-purple-500 mb-2 font-mono tracking-widest">NEW_ACCESS_KEY</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-600" size={18} />
               <input 
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all dark:text-white"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 outline-none transition-all text-purple-100 tracking-widest font-mono"
                 placeholder="••••••••"
                 required
                 minLength={6}
@@ -162,50 +163,50 @@ export default function ResetPassword() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl">
+          <div className="flex items-center gap-3 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
             <button
               type="button"
               onClick={() => setIsNotRobot(!isNotRobot)}
-              className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-sky-500 border-sky-500' : 'border-gray-400 dark:border-zinc-500 hover:border-sky-500'}`}
+              className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-purple-500 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'border-zinc-600 hover:border-purple-500/50'}`}
             >
               {isNotRobot && (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
             </button>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">I am not a robot</span>
+            <span className="text-xs font-mono tracking-widest text-zinc-400">HUMAN_VERIFICATION</span>
             <div className="ml-auto flex items-center justify-center">
-               <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin opacity-20"></div>
+               <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin opacity-40"></div>
             </div>
           </div>
 
           <button 
             type="submit"
             disabled={loading || otp.length !== 6}
-            className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold shadow-lg transition-all disabled:opacity-50"
+            className="w-full py-4 px-4 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 rounded-xl font-bold tracking-widest shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all disabled:opacity-50"
           >
-            {loading ? 'Resetting...' : 'Reset Password'}
+            {loading ? 'RESETTING...' : 'UPDATE_ACCESS_KEY'}
           </button>
         </form>
       )}
 
       {step === 3 && (
-        <div className="text-center">
-          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 p-4 rounded-xl flex flex-col items-center justify-center gap-3 mb-6">
-            <CheckCircle className="text-green-500" size={48} />
-            <p className="text-green-600 dark:text-green-400 font-bold">{message}</p>
+        <div className="text-center relative z-10">
+          <div className="bg-emerald-950/30 border border-emerald-500/30 p-6 rounded-xl flex flex-col items-center justify-center gap-4 mb-6 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+            <CheckCircle className="text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)] rounded-full" size={48} />
+            <p className="text-emerald-400 font-bold font-mono tracking-widest">{message}</p>
           </div>
-          <Link to="/login" className="block w-full py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold transition-all">
-            Return to Login
+          <Link to="/login" className="block w-full py-4 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 rounded-xl font-bold tracking-widest shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all">
+            RETURN_TO_AUTH
           </Link>
         </div>
       )}
 
       {step !== 3 && (
-        <div className="mt-8 text-center">
-          <Link to="/login" className="text-sm text-sky-600 dark:text-sky-400 hover:underline">
-            Back to login
+        <div className="mt-8 text-center relative z-10">
+          <Link to="/login" className="text-xs text-purple-400 hover:text-purple-300 hover:shadow-[0_0_10px_rgba(168,85,247,0.5)] transition-all font-mono tracking-widest">
+            ABORT_RECOVERY
           </Link>
         </div>
       )}

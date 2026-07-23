@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-white/50 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-200/50 dark:border-zinc-800/80 pt-16 pb-8 mt-auto font-tech">
-      <div className="container mx-auto px-6 max-w-6xl">
+    <footer className="bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-800/80 pt-16 pb-8 mt-auto font-tech relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-sky-500/30 to-transparent"></div>
+      <div className="container mx-auto px-6 max-w-6xl relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           
           {/* Brand */}
@@ -15,36 +16,36 @@ export default function Footer() {
                 BYTE.SQUISH_
               </span>
             </Link>
-            <p className="text-gray-500 dark:text-zinc-500 text-sm max-w-sm leading-relaxed">
-              // High-performance image optimization algorithms. <br/>
-              Reduce payload size. Retain visual fidelity.
+            <p className="text-zinc-500 text-xs max-w-sm leading-relaxed font-mono">
+              // HIGH-PERFORMANCE IMAGE OPTIMIZATION ALGORITHMS. <br/>
+              REDUCE PAYLOAD SIZE. RETAIN VISUAL FIDELITY.
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="font-bold text-gray-900 dark:text-zinc-300 mb-4 tracking-widest text-sm uppercase">Navigation</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-zinc-500">
-              <li><Link to="/" className="hover:text-sky-500 transition-colors">./home</Link></li>
-              <li><Link to="/login" className="hover:text-sky-500 transition-colors">./auth/login</Link></li>
-              <li><Link to="/register" className="hover:text-sky-500 transition-colors">./auth/register</Link></li>
+            <h4 className="font-bold text-zinc-300 mb-4 font-mono tracking-widest text-xs uppercase border-b border-zinc-800/80 pb-2">Navigation</h4>
+            <ul className="space-y-2 text-xs font-mono text-zinc-500 tracking-widest">
+              <li><Link to="/" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./HOME</Link></li>
+              <li><Link to="/login" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./AUTH/LOGIN</Link></li>
+              <li><Link to="/register" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./AUTH/REGISTER</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="font-bold text-gray-900 dark:text-zinc-300 mb-4 tracking-widest text-sm uppercase">Legal</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-zinc-500">
-              <li><Link to="/privacy-policy" className="hover:text-sky-500 transition-colors">./privacy_policy</Link></li>
-              <li><Link to="/terms-and-conditions" className="hover:text-sky-500 transition-colors">./terms_conditions</Link></li>
+            <h4 className="font-bold text-zinc-300 mb-4 font-mono tracking-widest text-xs uppercase border-b border-zinc-800/80 pb-2">Legal</h4>
+            <ul className="space-y-2 text-xs font-mono text-zinc-500 tracking-widest">
+              <li><Link to="/privacy-policy" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./PRIVACY_POLICY</Link></li>
+              <li><Link to="/terms-and-conditions" className="hover:text-sky-400 hover:tracking-[0.2em] transition-all">./TERMS_CONDITIONS</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-200/50 dark:border-zinc-800/80 pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 dark:text-zinc-600">
+        <div className="border-t border-zinc-800/80 pt-8 flex flex-col md:flex-row items-center justify-between text-[10px] font-mono text-zinc-600 tracking-widest">
           <p>© {new Date().getFullYear()} BYTESQUISH SYSTEM. ALL RIGHTS RESERVED.</p>
           <p className="flex items-center gap-1 mt-2 md:mt-0">
-            ENGINEERED WITH <Heart size={12} className="text-red-500 animate-pulse" /> BY <a href="https://isharankumar.com" target="_blank" rel="noopener noreferrer" className="hover:text-sky-500 transition-colors underline decoration-dotted underline-offset-4 ml-1">SHARAN KUMAR</a>
+            ENGINEERED WITH <Heart size={10} className="text-red-500 animate-pulse" /> BY <a href="https://isharankumar.com" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors underline decoration-dotted underline-offset-4 ml-1">SHARAN KUMAR</a>
           </p>
         </div>
       </div>

@@ -153,28 +153,29 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 animate-fade-in-up pb-20">
-      
-      <div className="text-center space-y-4">
+    <div className="max-w-4xl mx-auto space-y-12 animate-fade-in-up pb-20 relative font-tech">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-sky-600/10 blur-[100px] pointer-events-none -z-10 rounded-full mix-blend-screen"></div>
+
+      <div className="text-center space-y-4 relative z-10">
         <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-purple-500 to-sky-400 animate-gradient tracking-tight drop-shadow-sm">
           OPTIMIZE // COMPRESS
         </h1>
-        <p className="text-lg text-gray-600 dark:text-zinc-400 max-w-2xl mx-auto font-tech">
-          <span className="text-sky-500">{'>'}</span> SYSTEM.REDUCE_FILE_SIZE(IMAGE)
+        <p className="text-lg text-sky-500/80 max-w-2xl mx-auto font-mono text-sm tracking-widest">
+          <span className="text-sky-400">{'>'}</span> SYSTEM.REDUCE_FILE_SIZE(IMAGE)
           <br/>
-          Guest users allocated 10 concurrent operations.
+          GUEST_ALLOCATION: 10 CONCURRENT OPERATIONS.
         </p>
       </div>
 
       {!user && (
-        <div className="bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-xl p-4 flex items-center justify-between shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+        <div className="bg-sky-950/30 border border-sky-500/50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between shadow-[0_0_15px_rgba(14,165,233,0.1)] backdrop-blur-md relative z-10 gap-4">
           <div className="flex items-center gap-3">
-            <AlertCircle className="text-sky-500" />
-            <p className="text-sm text-sky-900 dark:text-sky-200 font-tech">
-              <strong>LIMIT DETECTED:</strong> Authenticate to unlock batch processing (20x).
+            <AlertCircle className="text-sky-400 animate-pulse" />
+            <p className="text-xs text-sky-200 font-mono tracking-widest">
+              <strong className="text-sky-400">LIMIT DETECTED:</strong> AUTHENTICATE TO UNLOCK BATCH PROCESSING (20x).
             </p>
           </div>
-          <Link to="/register" className="shrink-0 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-bold transition-all shadow-[0_0_10px_rgba(14,165,233,0.4)]">
+          <Link to="/register" className="shrink-0 px-4 py-2 bg-sky-600/20 border border-sky-500/50 hover:bg-sky-600/40 text-sky-400 rounded-lg text-xs font-bold tracking-widest transition-all shadow-[0_0_10px_rgba(14,165,233,0.2)]">
             INITIALIZE AUTH
           </Link>
         </div>
@@ -190,16 +191,16 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Left Column: Dropzone + Queue */}
-        <div className="md:col-span-2 flex flex-col gap-6">
+        <div className="md:col-span-2 flex flex-col gap-6 relative z-10">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-sky-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
             <div 
               onDragOver={(e) => e.preventDefault()}
               onDrop={onDrop}
-              className="relative overflow-hidden border border-gray-200 dark:border-zinc-700/50 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-10 flex flex-col items-center justify-center min-h-[300px] hover:border-sky-500/50 transition-all cursor-pointer shadow-2xl shadow-black/5"
+              className="relative overflow-hidden border border-zinc-800/80 rounded-2xl bg-zinc-950/60 backdrop-blur-xl p-10 flex flex-col items-center justify-center min-h-[300px] hover:border-sky-500/50 transition-all cursor-pointer shadow-[0_0_30px_rgba(56,189,248,0.05)] group"
               onClick={() => fileInputRef.current.click()}
             >
-              <div className="absolute inset-0 pointer-events-none border-2 border-transparent group-hover:border-sky-500/30 rounded-2xl transition-colors"></div>
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-sky-500 to-transparent opacity-30 group-hover:opacity-100 transition-opacity"></div>
               {/* Scanline Animation */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-sky-500/50 shadow-[0_0_15px_#0ea5e9] hidden group-hover:block animate-scan"></div>
               
@@ -211,16 +212,16 @@ export default function Home() {
                 className="hidden" 
                 onChange={(e) => handleFiles(e.target.files)}
               />
-              <div className="w-20 h-20 bg-sky-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.3)] transition-all duration-300 border border-sky-200 dark:border-zinc-700">
-                <UploadCloud size={32} className="text-sky-600 dark:text-sky-400" />
+              <div className="w-20 h-20 bg-sky-950/30 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.3)] transition-all duration-300 border border-sky-500/30">
+                <UploadCloud size={32} className="text-sky-400" />
               </div>
-              <p className="text-lg font-bold text-gray-800 dark:text-zinc-200 mb-2 font-tech tracking-wider">
+              <p className="text-lg font-bold text-sky-100 mb-2 font-mono tracking-widest drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">
                 AWAITING_DATA_INPUT
               </p>
-              <p className="text-sm text-gray-500 dark:text-zinc-500">
-                [ Drag & Drop or Click to Browse ]
+              <p className="text-xs text-sky-500/60 font-mono tracking-widest">
+                [ DRAG_AND_DROP_OR_CLICK ]
               </p>
-              <div className="absolute bottom-4 right-6 text-xs text-sky-500 font-tech font-bold opacity-60">
+              <div className="absolute bottom-4 right-6 text-[10px] text-sky-500 font-mono font-bold opacity-60 tracking-widest">
                 {files.length}/{maxFiles} ALLOCATED
               </div>
             </div>
@@ -228,63 +229,63 @@ export default function Home() {
 
           {/* Queue Section Moved Here */}
           {files.length > 0 && (
-            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-zinc-800/50 p-6 shadow-xl font-tech text-sm">
-              <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-100 dark:border-zinc-800">
-                <h3 className="font-bold text-gray-900 dark:text-zinc-200 tracking-wider">QUEUE [{files.length}]</h3>
+            <div className="bg-zinc-950/60 backdrop-blur-xl rounded-2xl border border-sky-900/30 p-6 shadow-[0_0_30px_rgba(56,189,248,0.05)] font-mono text-xs">
+              <div className="flex justify-between items-center mb-6 pb-3 border-b border-zinc-800/80">
+                <h3 className="font-bold text-sky-400 tracking-widest drop-shadow-[0_0_5px_rgba(56,189,248,0.5)]">QUEUE [{files.length}]</h3>
                 <button 
                   onClick={() => {setFiles([]); setResult(null);}}
-                  className="text-xs text-red-500 hover:text-red-400 uppercase tracking-widest border border-red-500/30 px-3 py-1 rounded-md bg-red-500/5 transition-colors hover:bg-red-500/20"
+                  className="text-[10px] text-red-400 hover:text-red-300 uppercase tracking-widest border border-red-900/50 px-3 py-1.5 rounded bg-red-950/30 transition-all hover:bg-red-900/50 hover:shadow-[0_0_10px_rgba(239,68,68,0.3)]"
                 >
-                  Abort_All
+                  ABORT_ALL
                 </button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {files.map((file, i) => {
                   const compressedFile = result?.isSingleFiles ? result.files[i] : null;
                   return (
-                    <div key={i} className={`relative group rounded-lg p-3 border transition-colors ${compressedFile ? 'bg-green-500/5 border-green-500/30' : 'bg-gray-50 dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-sky-500/50'}`}>
+                    <div key={i} className={`relative group rounded-xl p-3 border transition-all ${compressedFile ? 'bg-emerald-950/20 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-zinc-900/30 border-zinc-800 hover:border-sky-500/50 hover:shadow-[0_0_15px_rgba(56,189,248,0.1)]'}`}>
                       <button 
                         onClick={() => removeFile(i)}
-                        className="absolute -top-2 -right-2 bg-zinc-800 dark:bg-zinc-700 border border-zinc-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 shadow-lg z-10"
+                        className="absolute -top-2 -right-2 bg-zinc-900 border border-zinc-700 text-zinc-400 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-950 hover:text-red-400 hover:border-red-500 shadow-lg z-10"
                       >
-                        <X size={14} />
+                        <X size={12} />
                       </button>
                       <div className="flex flex-col items-center gap-2 text-center relative">
-                        <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center relative">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-950 border border-zinc-800 flex items-center justify-center relative shadow-inner">
                           {file.preview ? (
-                            <img src={file.preview} alt={file.name} className={`w-full h-full object-cover ${compressedFile ? 'opacity-70' : ''}`} />
+                            <img src={file.preview} alt={file.name} className={`w-full h-full object-cover ${compressedFile ? 'opacity-50 grayscale' : ''}`} />
                           ) : (
-                            <FileImage className="text-sky-400" size={24} />
+                            <FileImage className="text-sky-500/50" size={24} />
                           )}
                           {loading && !compressedFile && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20 rounded-md">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm z-20">
                               <Loader2 className="text-sky-400 animate-spin mb-1" size={18} />
-                              <span className="text-[10px] font-bold text-sky-400">{progress}%</span>
+                              <span className="text-[10px] font-bold text-sky-400 tracking-widest">{progress}%</span>
                             </div>
                           )}
                           {compressedFile && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-green-500/20 backdrop-blur-[1px] rounded-md z-20">
-                              <CheckCircle className="text-green-400 shadow-xl" size={28} />
+                            <div className="absolute inset-0 flex items-center justify-center bg-emerald-950/50 backdrop-blur-sm z-20">
+                              <CheckCircle className="text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]" size={24} />
                             </div>
                           )}
                         </div>
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate w-full" title={file.name}>
+                        <span className="text-[10px] text-zinc-400 truncate w-full tracking-wider" title={file.name}>
                           {file.name}
                         </span>
                         {compressedFile ? (
-                          <div className="flex flex-col items-center w-full">
-                            <span className="text-[10px] text-green-500/70 line-through">
+                          <div className="flex flex-col items-center w-full mt-1 border-t border-zinc-800/80 pt-1">
+                            <span className="text-[9px] text-zinc-600 line-through">
                               {formatBytes(file.size)}
                             </span>
-                            <span className="text-xs font-bold text-green-500">
+                            <span className="text-[10px] font-bold text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]">
                               {formatBytes(compressedFile.compressedSize)}
                             </span>
-                            <span className="text-[10px] font-black text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded mt-1">
+                            <span className="text-[9px] text-emerald-500 bg-emerald-950/50 border border-emerald-900/50 px-1 py-0.5 rounded mt-1 tracking-widest">
                               -{((file.size - compressedFile.compressedSize) / file.size * 100).toFixed(0)}%
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-[10px] text-zinc-500 mt-1">
                             {formatBytes(file.size)}
                           </span>
                         )}
@@ -298,17 +299,18 @@ export default function Home() {
         </div>
 
         {/* Settings panel */}
-        <div className="space-y-6">
-          <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-zinc-800/50 p-6 shadow-xl relative overflow-hidden">
-            <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6 font-tech tracking-wide uppercase text-sm border-b border-gray-100 dark:border-zinc-800 pb-3">
-              <Settings size={16} className="text-sky-500" /> Settings
+        <div className="space-y-6 relative z-10">
+          <div className="bg-zinc-950/60 backdrop-blur-xl rounded-2xl border border-zinc-800/80 p-6 shadow-[0_0_40px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-2xl rounded-full"></div>
+            <h3 className="font-bold text-white flex items-center gap-2 mb-6 font-mono tracking-widest uppercase text-xs border-b border-zinc-800/80 pb-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+              <Settings size={14} className="text-sky-500 animate-spin-slow" /> CONFIGURATION
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <span>Quality</span>
-                  <span className="text-sky-600 dark:text-sky-400">{quality}%</span>
+                <label className="flex justify-between text-[10px] font-bold text-zinc-400 mb-3 font-mono tracking-widest uppercase">
+                  <span>COMPRESSION_LEVEL</span>
+                  <span className="text-sky-400 border border-sky-900/50 bg-sky-950/30 px-2 py-0.5 rounded">{quality}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -316,40 +318,40 @@ export default function Home() {
                   max="100" 
                   value={quality}
                   onChange={(e) => setQuality(e.target.value)}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-sky-600"
+                  className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
                 />
-                <p className="text-xs text-gray-500 dark:text-zinc-500 mt-3 font-tech leading-relaxed">
-                  // Lower values increase optimization but degrade visual fidelity.
+                <p className="text-[9px] text-sky-500/50 mt-3 font-mono tracking-widest leading-relaxed uppercase">
+                  // LOWER_VALUES = MAX_OPTIMIZATION, MIN_FIDELITY
                 </p>
               </div>
 
               {files.length > 1 && (
-                <div className="pt-2">
-                  <label className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    <span>Output Format</span>
+                <div className="pt-2 border-t border-zinc-800/50 mt-4">
+                  <label className="flex justify-between text-[10px] font-bold text-zinc-400 mb-3 font-mono tracking-widest uppercase mt-4">
+                    <span>OUTPUT_ARCHITECTURE</span>
                   </label>
                   <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800/50 px-4 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 hover:border-sky-500 transition-colors flex-1 justify-center">
+                    <label className={`flex items-center gap-2 cursor-pointer text-[10px] px-3 py-2.5 rounded-lg border transition-all flex-1 justify-center ${downloadFormat === 'zip' ? 'bg-sky-950/30 border-sky-500/50 text-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]' : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}>
                       <input 
                         type="radio" 
                         name="format" 
                         value="zip"
                         checked={downloadFormat === 'zip'} 
                         onChange={(e) => setDownloadFormat(e.target.value)} 
-                        className="accent-sky-500"
+                        className="hidden"
                       />
-                      <span className="font-tech font-bold text-xs uppercase">.Zip Archive</span>
+                      <span className="font-mono font-bold tracking-widest">ARCHIVE_ZIP</span>
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800/50 px-4 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 hover:border-sky-500 transition-colors flex-1 justify-center">
+                    <label className={`flex items-center gap-2 cursor-pointer text-[10px] px-3 py-2.5 rounded-lg border transition-all flex-1 justify-center ${downloadFormat === 'single' ? 'bg-sky-950/30 border-sky-500/50 text-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]' : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}>
                       <input 
                         type="radio" 
                         name="format" 
                         value="single"
                         checked={downloadFormat === 'single'} 
                         onChange={(e) => setDownloadFormat(e.target.value)} 
-                        className="accent-sky-500"
+                        className="hidden"
                       />
-                      <span className="font-tech font-bold text-xs uppercase">Single Files</span>
+                      <span className="font-mono font-bold tracking-widest">SINGLE_FILES</span>
                     </label>
                   </div>
                 </div>
@@ -359,7 +361,7 @@ export default function Home() {
             <button 
               onClick={compressImages}
               disabled={files.length === 0 || loading}
-              className="mt-8 w-full py-3.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold shadow-[0_0_15px_rgba(14,165,233,0.4)] hover:shadow-[0_0_25px_rgba(14,165,233,0.6)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-tech tracking-widest border border-sky-400/30"
+              className="mt-8 w-full py-4 bg-sky-600/20 hover:bg-sky-600/40 text-sky-400 rounded-xl font-bold shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:shadow-[0_0_25px_rgba(56,189,248,0.4)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-mono tracking-[0.2em] border border-sky-500/50 text-xs"
             >
               {loading ? (
                 <span className="animate-pulse">EXECUTING...</span>
@@ -370,26 +372,26 @@ export default function Home() {
           </div>
 
           {result && (
-            <div className="bg-zinc-950 border border-green-500/30 rounded-2xl p-6 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.1)] animate-fade-in-up font-tech relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-3xl"></div>
+            <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-2xl p-6 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)] animate-fade-in-up font-mono relative overflow-hidden backdrop-blur-xl">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl"></div>
               
-              <div className="flex items-center gap-3 mb-6 border-b border-green-500/20 pb-3">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <h3 className="font-bold text-sm tracking-widest uppercase">Task.Complete</h3>
+              <div className="flex items-center gap-3 mb-6 border-b border-emerald-500/30 pb-3">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                <h3 className="font-bold text-xs tracking-widest uppercase text-emerald-300 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]">TASK.COMPLETE</h3>
               </div>
               
-              <div className="space-y-3 mb-8 text-xs sm:text-sm">
+              <div className="space-y-3 mb-8 text-[10px] sm:text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-green-500/60">RAW_SIZE:</span>
-                  <span className="font-bold">{formatBytes(result.totalOriginal)}</span>
+                  <span className="text-emerald-500/60 tracking-widest">RAW_SIZE:</span>
+                  <span className="font-bold text-emerald-100">{formatBytes(result.totalOriginal)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-green-500/60">NEW_SIZE:</span>
-                  <span className="font-bold text-white">{formatBytes(result.totalCompressed)}</span>
+                  <span className="text-emerald-500/60 tracking-widest">NEW_SIZE:</span>
+                  <span className="font-bold text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]">{formatBytes(result.totalCompressed)}</span>
                 </div>
-                <div className="flex justify-between items-center pt-3 border-t border-green-500/20 text-green-300">
-                  <span className="text-green-500/60">EFFICIENCY:</span>
-                  <span className="font-bold text-lg">{result.savings}%</span>
+                <div className="flex justify-between items-center pt-3 border-t border-emerald-500/30 text-emerald-300">
+                  <span className="text-emerald-500/80 tracking-widest">EFFICIENCY:</span>
+                  <span className="font-bold text-base drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]">{result.savings}%</span>
                 </div>
               </div>
 
@@ -400,10 +402,10 @@ export default function Home() {
                       key={idx} 
                       href={file.url} 
                       download={file.filename}
-                      className="w-full py-2.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 rounded-lg text-xs font-bold transition-all flex justify-between items-center px-4 font-tech tracking-wider"
+                      className="w-full py-3 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 hover:border-emerald-500/70 text-emerald-400 rounded-lg text-[10px] font-bold transition-all flex justify-between items-center px-4 tracking-wider hover:shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                     >
-                      <span className="truncate max-w-[180px]">{file.filename}</span>
-                      <Download size={14} />
+                      <span className="truncate max-w-[160px]">{file.filename}</span>
+                      <Download size={14} className="opacity-70" />
                     </a>
                   ))}
                   <button 
@@ -417,18 +419,18 @@ export default function Home() {
                         }, idx * 200);
                       });
                     }} 
-                    className="w-full mt-4 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all flex justify-center items-center gap-2 font-tech tracking-widest border border-green-400/30"
+                    className="w-full mt-4 py-3 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 rounded-xl font-bold shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-all flex justify-center items-center gap-2 tracking-widest border border-emerald-500/50 text-[10px]"
                   >
-                    <Download size={16} /> DOWNLOAD_ALL_FILES
+                    <Download size={14} /> FETCH_ALL_FILES
                   </button>
                 </div>
               ) : (
                 <a 
                   href={result.url} 
                   download={result.filename}
-                  className="w-full py-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/50 text-green-400 rounded-xl font-bold transition-all flex justify-center items-center gap-2 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)] mt-6"
+                  className="w-full py-4 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50 text-emerald-400 rounded-xl font-bold transition-all flex justify-center items-center gap-2 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] mt-6 text-xs tracking-[0.15em]"
                 >
-                  <Download size={16} /> DOWNLOAD_DATA
+                  <Download size={16} /> FETCH_DATA_ARCHIVE
                 </a>
               )}
             </div>

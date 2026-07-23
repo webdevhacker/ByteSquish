@@ -6,7 +6,12 @@ const UAParser = require('ua-parser-js');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const Session = require('../models/Session');
+const Image = require('../models/Image');
 const { requireAuth } = require('../middlewares/auth');
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 
@@ -199,6 +204,11 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    if (user.isTwoFactorEnabled) {
+      const tempToken = jwt.sign({ tempUserId: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+      return res.json({ requires2FA: true, tempToken, message: '2FA verification required' });
+    }
+
     const rawUA = req.headers['user-agent'] || '';
     const parser = new UAParser(rawUA);
     const uaResult = parser.getResult();
@@ -327,6 +337,181 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
     res.json({ message: 'Session revoked' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to revoke session' });
+  }
+});
+
+router.post('/verify-2fa', async (req, res) => {
+  try {
+    const { tempToken, code } = req.body;
+    if (!tempToken || !code) return res.status(400).json({ error: 'Token and 2FA code required' });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    } catch (e) {
+      return res.status(401).json({ error: 'Invalid or expired temporary token' });
+    }
+
+    const user = await User.findById(decoded.tempUserId);
+    if (!user || !user.isTwoFactorEnabled) {
+      return res.status(400).json({ error: 'Invalid user or 2FA not enabled' });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code,
+      window: 1 // Allow 30 seconds drift
+    });
+
+    if (!verified) {
+      return res.status(401).json({ error: 'Invalid 2FA code' });
+    }
+
+    const rawUA = req.headers['user-agent'] || '';
+    const parser = new UAParser(rawUA);
+    const uaResult = parser.getResult();
+    const userAgent = `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`;
+    const ipAddress = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.connection.remoteAddress || 'Unknown';
+    
+    const session = await Session.create({
+      userId: user._id, userAgent, ipAddress
+    });
+
+    const token = jwt.sign({ userId: user._id, sessionId: session._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    sendSignInAlert(user, ipAddress, userAgent, session._id);
+
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error during 2FA verification' });
+  }
+});
+
+router.post('/request-delete-account', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const resetToken = generateOTP();
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = new Date(Date.now() + 3600000);
+    await user.save();
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"ByteSquish System" <noreply@bytesquish.com>',
+      to: user.email,
+      subject: "Account Deletion Request",
+      text: `Your account deletion OTP is: ${resetToken}`,
+      html: getEmailTemplate("Delete Your Account", "We received a request to permanently delete your account. Use the following code to confirm.", resetToken, "WARNING: This action is irreversible.")
+    });
+
+    res.json({ message: 'OTP sent to email for account deletion.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to request account deletion' });
+  }
+});
+
+router.post('/delete-account', requireAuth, async (req, res) => {
+  try {
+    const { otp } = req.body;
+    const user = await User.findOne({
+      _id: req.user.userId,
+      resetToken: otp,
+      resetTokenExpiry: { $gt: new Date() }
+    });
+
+    if (!user) return res.status(400).json({ error: 'Invalid or expired OTP' });
+
+    const images = await Image.find({ userId: user._id });
+    const uploadsDir = path.join(__dirname, '..', 'uploads');
+    images.forEach(img => {
+      const filePath = path.join(uploadsDir, img.fileName);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    });
+
+    await Image.deleteMany({ userId: user._id });
+    await Session.deleteMany({ userId: user._id });
+    await User.deleteOne({ _id: user._id });
+
+    res.json({ message: 'Account and all data successfully deleted.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
+router.get('/2fa/generate', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (user.isTwoFactorEnabled) {
+      return res.status(400).json({ error: '2FA is already enabled' });
+    }
+
+    const secret = speakeasy.generateSecret({
+      name: `ByteSquish (${user.email})`
+    });
+
+    qrcode.toDataURL(secret.otpauth_url, (err, data_url) => {
+      if (err) return res.status(500).json({ error: 'Failed to generate QR code' });
+      res.json({ secret: secret.base32, qrCode: data_url });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate 2FA' });
+  }
+});
+
+router.post('/2fa/enable', requireAuth, async (req, res) => {
+  try {
+    const { secret, token } = req.body;
+    const user = await User.findById(req.user.userId);
+
+    const verified = speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: token,
+      window: 1
+    });
+
+    if (!verified) {
+      return res.status(400).json({ error: 'Invalid 2FA code' });
+    }
+
+    user.twoFactorSecret = secret;
+    user.isTwoFactorEnabled = true;
+    await user.save();
+
+    res.json({ message: '2FA enabled successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to enable 2FA' });
+  }
+});
+
+router.post('/2fa/disable', requireAuth, async (req, res) => {
+  try {
+    const { token } = req.body;
+    const user = await User.findById(req.user.userId);
+
+    if (!user.isTwoFactorEnabled) {
+      return res.status(400).json({ error: '2FA is not enabled' });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: token,
+      window: 1
+    });
+
+    if (!verified) {
+      return res.status(400).json({ error: 'Invalid 2FA code' });
+    }
+
+    user.twoFactorSecret = undefined;
+    user.isTwoFactorEnabled = false;
+    await user.save();
+
+    res.json({ message: '2FA disabled successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to disable 2FA' });
   }
 });
 

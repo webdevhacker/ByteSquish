@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { Lock, HardDrive, Shield, Download, XCircle, Clock, Smartphone, AlertTriangle } from 'lucide-react';
+import { Lock, HardDrive, Shield, Download, XCircle, Clock, Smartphone, AlertTriangle, Trash, QrCode, Power } from 'lucide-react';
 
 export default function Profile() {
   const { user, token, logout } = useAuth();
@@ -18,6 +18,18 @@ export default function Profile() {
   const [resetMessage, setResetMessage] = useState('');
   const [resetError, setResetError] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+
+  const [twoFactorSecret, setTwoFactorSecret] = useState('');
+  const [twoFactorQr, setTwoFactorQr] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorStep, setTwoFactorStep] = useState(0);
+  const [twoFactorMessage, setTwoFactorMessage] = useState('');
+  const [twoFactorError, setTwoFactorError] = useState('');
+
+  const [deleteAccStep, setDeleteAccStep] = useState(1);
+  const [deleteAccOtp, setDeleteAccOtp] = useState('');
+  const [deleteAccLoading, setDeleteAccLoading] = useState(false);
+  const [deleteAccError, setDeleteAccError] = useState('');
 
   useEffect(() => {
     if (user && token) {
@@ -85,6 +97,82 @@ export default function Profile() {
     setResetLoading(false);
   };
 
+  const handleDeleteImage = async (id) => {
+    if (!window.confirm("Are you sure you want to permanently delete this file?")) return;
+    try {
+      await axios.delete(`/api/images/delete/${id}`);
+      setImages(images.filter(img => img.id !== id));
+    } catch (err) {
+      alert('Failed to delete image');
+    }
+  };
+
+  const handleGenerate2FA = async () => {
+    setTwoFactorMessage(''); setTwoFactorError('');
+    try {
+      const res = await axios.get('/api/auth/2fa/generate');
+      setTwoFactorSecret(res.data.secret);
+      setTwoFactorQr(res.data.qrCode);
+      setTwoFactorStep(1);
+    } catch (err) {
+      if (err.response?.data?.error === '2FA is already enabled') {
+        setTwoFactorStep(2);
+      } else {
+        setTwoFactorError('Failed to generate 2FA');
+      }
+    }
+  };
+
+  const handleEnable2FA = async (e) => {
+    e.preventDefault();
+    setTwoFactorMessage(''); setTwoFactorError('');
+    try {
+      await axios.post('/api/auth/2fa/enable', { secret: twoFactorSecret, token: twoFactorCode });
+      setTwoFactorMessage('2FA enabled successfully!');
+      setTwoFactorStep(0);
+      setTwoFactorCode('');
+    } catch (err) {
+      setTwoFactorError(err.response?.data?.error || 'Invalid code');
+    }
+  };
+
+  const handleDisable2FA = async (e) => {
+    e.preventDefault();
+    setTwoFactorMessage(''); setTwoFactorError('');
+    try {
+      await axios.post('/api/auth/2fa/disable', { token: twoFactorCode });
+      setTwoFactorMessage('2FA disabled successfully!');
+      setTwoFactorStep(0);
+      setTwoFactorCode('');
+    } catch (err) {
+      setTwoFactorError(err.response?.data?.error || 'Invalid code');
+    }
+  };
+
+  const handleRequestDeleteAcc = async () => {
+    if (!window.confirm("WARNING: This will send a deletion code to your email. Proceed?")) return;
+    setDeleteAccLoading(true); setDeleteAccError('');
+    try {
+      await axios.post('/api/auth/request-delete-account');
+      setDeleteAccStep(2);
+    } catch (err) {
+      setDeleteAccError('Failed to request deletion code.');
+    }
+    setDeleteAccLoading(false);
+  };
+
+  const handleConfirmDeleteAcc = async (e) => {
+    e.preventDefault();
+    setDeleteAccLoading(true); setDeleteAccError('');
+    try {
+      await axios.post('/api/auth/delete-account', { otp: deleteAccOtp });
+      logout();
+    } catch (err) {
+      setDeleteAccError(err.response?.data?.error || 'Failed to delete account');
+      setDeleteAccLoading(false);
+    }
+  };
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -97,33 +185,39 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 animate-fade-in-up font-tech">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-white tracking-widest uppercase mb-2">
-          WELCOME, {user?.name || 'USER'}
+    <div className="max-w-5xl mx-auto pb-20 animate-fade-in-up font-tech relative">
+      {/* Subtle background tech glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-sky-600/10 blur-[120px] pointer-events-none -z-10 rounded-full mix-blend-screen"></div>
+      
+      <div className="mb-10 relative">
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-purple-400 to-sky-400 tracking-widest uppercase mb-3 drop-shadow-sm">
+          SYSTEM_ACCESS: {user?.name || 'USER'}
         </h1>
-        <p className="text-zinc-400 text-sm flex items-center gap-2">
-          <span>Manage data vault and security protocols.</span>
+        <div className="inline-flex items-center gap-3 bg-sky-950/30 border border-sky-900/50 p-3 rounded-lg backdrop-blur-md shadow-[0_0_15px_rgba(56,189,248,0.05)] text-sky-500/80 font-mono text-sm">
+          <Shield size={16} className="animate-pulse text-sky-400" />
+          <span>SECURITY & VAULT CLEARANCE LEVEL 4</span>
           {user?.email && (
             <>
-              <span className="text-zinc-600">|</span>
-              <span className="text-sky-400 font-bold">{user.email}</span>
+              <span className="text-sky-500/50">|</span>
+              <span className="text-sky-300 font-bold tracking-wider">{user.email}</span>
             </>
           )}
-        </p>
+        </div>
       </div>
 
-      <div className="flex gap-4 mb-8 border-b border-zinc-800 pb-2">
+      <div className="flex gap-4 mb-8 border-b border-zinc-800/80 pb-0">
         <button 
           onClick={() => setActiveTab('vault')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-bold tracking-widest transition-all ${activeTab === 'vault' ? 'text-sky-400 border-b-2 border-sky-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+          className={`flex items-center gap-2 px-6 py-3 text-sm font-bold tracking-widest transition-all rounded-t-lg relative overflow-hidden ${activeTab === 'vault' ? 'text-sky-300 bg-sky-950/40 border-t-2 border-t-sky-400 border-x border-x-sky-900/30 shadow-[0_-10px_20px_-10px_rgba(56,189,248,0.2)]' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'}`}
         >
+          {activeTab === 'vault' && <div className="absolute inset-0 bg-gradient-to-t from-sky-500/10 to-transparent pointer-events-none"></div>}
           <HardDrive size={16} /> DATA_VAULT
         </button>
         <button 
           onClick={() => setActiveTab('security')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-bold tracking-widest transition-all ${activeTab === 'security' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+          className={`flex items-center gap-2 px-6 py-3 text-sm font-bold tracking-widest transition-all rounded-t-lg relative overflow-hidden ${activeTab === 'security' ? 'text-purple-300 bg-purple-950/40 border-t-2 border-t-purple-400 border-x border-x-purple-900/30 shadow-[0_-10px_20px_-10px_rgba(168,85,247,0.2)]' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'}`}
         >
+          {activeTab === 'security' && <div className="absolute inset-0 bg-gradient-to-t from-purple-500/10 to-transparent pointer-events-none"></div>}
           <Shield size={16} /> SECURITY
         </button>
       </div>
@@ -150,30 +244,40 @@ export default function Profile() {
                 const isExpired = expires < new Date();
                 
                 return (
-                  <div key={img.id} className={`bg-zinc-950 border p-5 rounded-xl transition-all ${isExpired ? 'border-red-900/50 opacity-50' : 'border-zinc-800 hover:border-sky-500/30'}`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="text-zinc-200 font-bold truncate pr-4">{img.originalName}</h4>
+                  <div key={img.id} className={`bg-zinc-950/60 backdrop-blur-md border p-5 rounded-xl transition-all relative overflow-hidden group ${isExpired ? 'border-red-900/30 opacity-50' : 'border-sky-900/30 hover:border-sky-500/50 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] hover:-translate-y-1'}`}>
+                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-sky-500 to-transparent opacity-50"></div>
+                    <div className="flex justify-between items-start mb-4 pl-3">
+                      <h4 className="text-zinc-200 font-bold truncate pr-4 font-mono text-sm tracking-wide">{img.originalName}</h4>
                       {isExpired ? (
-                        <span className="text-xs bg-red-950 text-red-500 px-2 py-1 rounded">EXPIRED</span>
+                        <span className="text-[10px] bg-red-950/80 text-red-500 border border-red-900 px-2 py-1 rounded font-mono tracking-widest">EXPIRED</span>
                       ) : (
-                        <a 
-                          href={`/api/images/download/${img.id}`} 
-                          className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 p-2 rounded-lg transition-colors shrink-0"
-                          title="Download"
-                        >
-                          <Download size={16} />
-                        </a>
+                        <div className="flex gap-2 shrink-0">
+                          <a 
+                            href={`/api/images/download/${img.id}`} 
+                            className="bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 text-sky-400 p-2 rounded-lg transition-all hover:shadow-[0_0_10px_rgba(56,189,248,0.3)] hover:-translate-y-0.5"
+                            title="Download"
+                          >
+                            <Download size={16} />
+                          </a>
+                          <button 
+                            onClick={() => handleDeleteImage(img.id)}
+                            className="bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 p-2 rounded-lg transition-all hover:shadow-[0_0_10px_rgba(239,68,68,0.3)] hover:-translate-y-0.5"
+                            title="Delete"
+                          >
+                            <Trash size={16} />
+                          </button>
+                        </div>
                       )}
                     </div>
-                    <div className="space-y-1 text-xs text-zinc-500">
-                      <div className="flex justify-between">
-                        <span>Original:</span> <span className="text-zinc-400">{formatBytes(img.originalSize)}</span>
+                    <div className="space-y-2 text-xs text-zinc-500 font-mono pl-3">
+                      <div className="flex justify-between items-center bg-zinc-900/50 p-2 rounded border border-zinc-800/50">
+                        <span className="text-zinc-600">ORIGINAL</span> <span className="text-zinc-300">{formatBytes(img.originalSize)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Compressed:</span> <span className="text-sky-400">{formatBytes(img.compressedSize)}</span>
+                      <div className="flex justify-between items-center bg-sky-950/20 border border-sky-900/30 p-2 rounded shadow-inner">
+                        <span className="text-sky-600">COMPRESSED</span> <span className="text-sky-400 font-bold drop-shadow-[0_0_5px_rgba(56,189,248,0.5)]">{formatBytes(img.compressedSize)}</span>
                       </div>
-                      <div className="flex justify-between pt-2 mt-2 border-t border-zinc-900">
-                        <span>Expires:</span> <span>{expires.toLocaleDateString()} {expires.toLocaleTimeString()}</span>
+                      <div className="flex justify-between items-center pt-3 mt-2 border-t border-zinc-900/80">
+                        <span>EXPIRES</span> <span className="text-zinc-400">{expires.toLocaleDateString()} {expires.toLocaleTimeString()}</span>
                       </div>
                     </div>
                   </div>
@@ -185,22 +289,25 @@ export default function Profile() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl">
-            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <Lock size={18} className="text-purple-500" /> CHANGE_PASSWORD
+          <div className="bg-zinc-950/60 backdrop-blur-xl border border-purple-900/30 hover:border-purple-500/50 p-6 rounded-2xl shadow-lg relative overflow-hidden transition-all group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+              <Lock size={64} className="text-purple-500" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">
+              <Lock size={18} className="text-purple-400" /> CHANGE_PASSWORD
             </h3>
             
             {resetStep === 1 ? (
-              <div className="space-y-4">
-                <p className="text-xs text-zinc-400">
-                  To change your password, we need to verify your identity. We will send a 6-digit code to <strong className="text-purple-400">{user.email}</strong>.
+              <div className="space-y-4 relative z-10">
+                <p className="text-xs text-zinc-400 font-mono">
+                  Identity verification required. A 6-digit access code will be transmitted to <strong className="text-purple-400">{user.email}</strong>.
                 </p>
                 <button 
                   onClick={handleRequestOtp}
                   disabled={resetLoading}
-                  className="w-full bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-400 font-bold py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                  className="w-full bg-purple-600/10 hover:bg-purple-600/30 border border-purple-500/30 hover:border-purple-500/70 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] text-purple-400 font-bold py-3 rounded-lg transition-all text-sm disabled:opacity-50 tracking-widest"
                 >
-                  {resetLoading ? 'SENDING...' : 'SEND_VERIFICATION_CODE'}
+                  {resetLoading ? 'TRANSMITTING...' : 'REQUEST_ACCESS_CODE'}
                 </button>
               </div>
             ) : (
@@ -263,22 +370,157 @@ export default function Profile() {
             )}
           </div>
 
-          <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl">
-            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <Smartphone size={18} className="text-sky-500" /> ACTIVE_SESSIONS
+          <div className="bg-zinc-950/60 backdrop-blur-xl border border-emerald-900/30 hover:border-emerald-500/50 p-6 rounded-2xl shadow-lg relative overflow-hidden transition-all group flex flex-col justify-between">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+              <QrCode size={64} className="text-emerald-500" />
+            </div>
+            <div className="relative z-10">
+              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+                <QrCode size={18} className="text-emerald-400" /> TWO-FACTOR AUTH
+              </h3>
+              
+              {twoFactorStep === 0 && (
+                <div className="space-y-4">
+                  <p className="text-xs text-zinc-400 font-mono">
+                    Enhance system security using a time-based authenticator (Google Authenticator, Authy).
+                  </p>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={handleGenerate2FA}
+                      className="w-full bg-emerald-600/10 hover:bg-emerald-600/30 border border-emerald-500/30 hover:border-emerald-500/70 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-emerald-400 font-bold py-3 rounded-lg transition-all text-sm tracking-widest"
+                    >
+                      INITIALIZE_2FA_SETUP
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {twoFactorStep === 1 && (
+                <div className="space-y-4">
+                  <div className="bg-white p-2 w-fit mx-auto rounded-lg">
+                    <img src={twoFactorQr} alt="QR Code" className="w-32 h-32" />
+                  </div>
+                  <p className="text-xs text-center text-zinc-400">Scan this QR code with your Authenticator app, then enter the 6-digit code below.</p>
+                  <form onSubmit={handleEnable2FA} className="flex gap-2">
+                    <input 
+                      type="text" 
+                      maxLength={6}
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500 tracking-widest font-mono text-center"
+                      placeholder="000000"
+                      required
+                    />
+                    <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm">
+                      VERIFY
+                    </button>
+                  </form>
+                  <button onClick={() => setTwoFactorStep(0)} className="w-full text-zinc-500 text-xs hover:text-zinc-300">CANCEL</button>
+                </div>
+              )}
+
+              {twoFactorStep === 2 && (
+                <div className="space-y-4">
+                  <p className="text-xs text-emerald-400 font-bold bg-emerald-900/20 p-3 rounded border border-emerald-900/50">
+                    2FA is currently ENABLED on your account.
+                  </p>
+                  <p className="text-xs text-zinc-400">To disable it, enter a code from your authenticator app.</p>
+                  <form onSubmit={handleDisable2FA} className="flex gap-2">
+                    <input 
+                      type="text" 
+                      maxLength={6}
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 tracking-widest font-mono text-center"
+                      placeholder="000000"
+                      required
+                    />
+                    <button type="submit" className="bg-red-600/20 border border-red-500/50 text-red-500 font-bold px-4 py-2 rounded-lg transition-colors text-sm hover:bg-red-600/40">
+                      DISABLE
+                    </button>
+                  </form>
+                  <button onClick={() => setTwoFactorStep(0)} className="w-full text-zinc-500 text-xs hover:text-zinc-300">CANCEL</button>
+                </div>
+              )}
+
+              {twoFactorMessage && <div className="mt-4 text-xs text-emerald-400 text-center">{twoFactorMessage}</div>}
+              {twoFactorError && <div className="mt-4 text-xs text-red-400 text-center">{twoFactorError}</div>}
+            </div>
+          </div>
+
+          <div className="bg-zinc-950/60 backdrop-blur-xl border border-red-900/40 p-6 rounded-2xl md:col-span-2 shadow-[0_0_30px_rgba(220,38,38,0.05)]">
+            <h3 className="text-lg font-bold text-red-500 mb-6 flex items-center gap-2 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+              <Power size={18} /> CRITICAL_OPERATIONS
             </h3>
-            <div className="space-y-4">
+            
+            <div className="border border-red-900/50 bg-red-950/10 hover:bg-red-950/30 transition-colors p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center justify-between group">
+              <div className="space-y-2 max-w-lg">
+                <h4 className="text-red-400 font-bold tracking-widest">DATA_ANNIHILATION_PROTOCOL</h4>
+                <p className="text-xs text-zinc-400 leading-relaxed font-mono">
+                  Irreversible deletion of account, active sessions, and cryptographic data vault. A verification sequence will be transmitted to confirm authorization.
+                </p>
+              </div>
+              
+              <div className="shrink-0 w-full md:w-auto">
+                {deleteAccStep === 1 ? (
+                  <button 
+                    onClick={handleRequestDeleteAcc}
+                    disabled={deleteAccLoading}
+                    className="w-full bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-red-400 font-bold px-6 py-3 rounded-lg transition-colors text-sm"
+                  >
+                    {deleteAccLoading ? 'PROCESSING...' : 'REQUEST DELETION'}
+                  </button>
+                ) : (
+                  <form onSubmit={handleConfirmDeleteAcc} className="flex gap-2 flex-col sm:flex-row">
+                    <input 
+                      type="text" 
+                      maxLength={6}
+                      value={deleteAccOtp}
+                      onChange={(e) => setDeleteAccOtp(e.target.value.replace(/\D/g, ''))}
+                      className="w-full sm:w-32 bg-zinc-900 border border-red-900 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 tracking-widest font-mono text-center"
+                      placeholder="000000"
+                      required
+                    />
+                    <button 
+                      type="submit"
+                      disabled={deleteAccLoading || deleteAccOtp.length !== 6}
+                      className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                    >
+                      {deleteAccLoading ? 'DELETING...' : 'CONFIRM'}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setDeleteAccStep(1)}
+                      className="text-zinc-500 hover:text-zinc-300 text-xs px-2"
+                    >
+                      CANCEL
+                    </button>
+                  </form>
+                )}
+                {deleteAccError && <div className="mt-2 text-xs text-red-400 text-center">{deleteAccError}</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-zinc-950/60 backdrop-blur-xl border border-sky-900/30 hover:border-sky-500/50 p-6 rounded-2xl shadow-lg relative overflow-hidden transition-all group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+              <Smartphone size={64} className="text-sky-500" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">
+              <Smartphone size={18} className="text-sky-400" /> ACTIVE_SESSIONS
+            </h3>
+            <div className="space-y-4 relative z-10">
               {sessions.map(s => (
-                <div key={s.id} className={`p-4 rounded-xl border flex items-center justify-between ${s.isCurrent ? 'bg-sky-950/20 border-sky-900/50' : 'bg-zinc-900/30 border-zinc-800'}`}>
+                <div key={s.id} className={`p-4 rounded-xl border flex items-center justify-between font-mono ${s.isCurrent ? 'bg-sky-950/30 border-sky-500/50 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'bg-zinc-900/30 border-zinc-800 hover:border-sky-900/50'}`}>
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-zinc-200">
-                      {s.ipAddress} {s.isCurrent && <span className="ml-2 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded uppercase font-black tracking-widest">Active</span>}
+                    <p className="text-sm font-bold text-zinc-200 flex items-center">
+                      {s.ipAddress} {s.isCurrent && <span className="ml-3 text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/50 px-2 py-0.5 rounded tracking-widest shadow-[0_0_10px_rgba(56,189,248,0.3)] animate-pulse">CURRENT</span>}
                     </p>
-                    <p className="text-xs text-zinc-500 truncate max-w-[200px] sm:max-w-[250px]" title={s.userAgent}>
+                    <p className="text-[11px] text-zinc-500 truncate max-w-[200px] sm:max-w-[250px]" title={s.userAgent}>
                       {s.userAgent}
                     </p>
                     <p className="text-[10px] text-zinc-600">
-                      Started: {new Date(s.createdAt).toLocaleDateString()}
+                      INIT: {new Date(s.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
