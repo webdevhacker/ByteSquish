@@ -13,6 +13,30 @@ const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
 
+async function verifyTurnstile(token) {
+  if (process.env.NODE_ENV !== 'production' && !process.env.TURNSTILE_SECRET_KEY) {
+    return true; // Skip in dev without keys
+  }
+  if (!token) return false;
+  
+  try {
+    const formData = new URLSearchParams();
+    formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA');
+    formData.append('response', token);
+    
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await res.json();
+    return data.success;
+  } catch (err) {
+    console.error('Turnstile verify error:', err);
+    return false;
+  }
+}
+
 const router = express.Router();
 
 // Setup Nodemailer transporter
@@ -106,8 +130,13 @@ async function sendSignInAlert(user, ipAddress, userAgent, sessionId = null) {
 
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, turnstileToken } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+    
+    if (!(await verifyTurnstile(turnstileToken))) {
+      return res.status(400).json({ error: 'Security verification failed. Please try again.' });
+    }
+
     const displayName = name || 'User';
 
     const existing = await User.findOne({ email });
@@ -176,8 +205,12 @@ router.post('/verify-email', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, turnstileToken } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+    if (!(await verifyTurnstile(turnstileToken))) {
+      return res.status(400).json({ error: 'Security verification failed. Please try again.' });
+    }
 
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -231,7 +264,12 @@ router.post('/login', async (req, res) => {
 
 router.post('/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, turnstileToken } = req.body;
+    
+    if (!(await verifyTurnstile(turnstileToken))) {
+      return res.status(400).json({ error: 'Security verification failed. Please try again.' });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       // Return 200 anyway to prevent email enumeration
@@ -264,8 +302,12 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const { email, otp, newPassword, turnstileToken } = req.body;
     if (!email || !otp || !newPassword) return res.status(400).json({ error: 'Email, OTP, and new password required' });
+
+    if (!(await verifyTurnstile(turnstileToken))) {
+      return res.status(400).json({ error: 'Security verification failed. Please try again.' });
+    }
 
     const user = await User.findOne({
       email: email,

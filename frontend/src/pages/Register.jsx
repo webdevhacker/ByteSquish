@@ -2,19 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Mail, Lock, Loader2, User } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isNotRobot, setIsNotRobot] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (user) {
@@ -28,14 +31,14 @@ export default function Register() {
       addToast('Passwords do not match', 'error');
       return;
     }
-    if (!isNotRobot) {
-      addToast('Please confirm you are not a robot', 'error');
+    if (!turnstileToken) {
+      addToast('Please complete the security check', 'error');
       return;
     }
     setLoading(true);
     
     try {
-      const res = await axios.post('/api/auth/register', { name, email, password });
+      const res = await axios.post('/api/auth/register', { name, email, password, turnstileToken });
       addToast(res.data.message, 'success');
       setTimeout(() => {
         navigate('/verify?email=' + encodeURIComponent(res.data.email));
@@ -116,22 +119,14 @@ export default function Register() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl transition-colors">
-          <button
-            type="button"
-            onClick={() => setIsNotRobot(!isNotRobot)}
-            className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-sky-500 border-sky-500 shadow-[0_0_10px_rgba(56,189,248,0.5)]' : 'border-zinc-300 dark:border-zinc-600 hover:border-sky-400 dark:hover:border-sky-500/50'}`}
-          >
-            {isNotRobot && (
-              <svg className="w-4 h-4 text-white dark:text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </button>
-          <span className="text-xs font-mono tracking-widest text-zinc-600 dark:text-zinc-400 transition-colors">HUMAN_VERIFICATION</span>
-          <div className="ml-auto flex items-center justify-center">
-             <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin opacity-40"></div>
-          </div>
+        <div className="flex items-center justify-center py-2 transition-colors">
+          <Turnstile
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{
+              theme: theme === 'dark' ? 'dark' : 'light',
+            }}
+          />
         </div>
 
         <button

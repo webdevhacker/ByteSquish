@@ -3,31 +3,34 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, CheckCircle, Mail, KeyRound } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function ResetPassword() {
   const [step, setStep] = useState(1); // 1: Request OTP, 2: Submit OTP
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
-  const [isNotRobot, setIsNotRobot] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
   
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
+  const { theme } = useTheme();
   
   const navigate = useNavigate();
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
-    if (!isNotRobot) {
-      addToast('Please confirm you are not a robot', 'error');
+    if (!turnstileToken) {
+      addToast('Please complete the security check', 'error');
       return;
     }
     setMessage('');
     setLoading(true);
     
     try {
-      const res = await axios.post('/api/auth/forgot-password', { email });
+      const res = await axios.post('/api/auth/forgot-password', { email, turnstileToken });
       setMessage(res.data.message);
       addToast(res.data.message, 'success');
       setStep(2);
@@ -39,8 +42,8 @@ export default function ResetPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!isNotRobot) {
-      addToast('Please confirm you are not a robot', 'error');
+    if (!turnstileToken) {
+      addToast('Please complete the security check', 'error');
       return;
     }
     setMessage('');
@@ -50,7 +53,8 @@ export default function ResetPassword() {
       const res = await axios.post('/api/auth/reset-password', {
         email,
         otp,
-        newPassword: password
+        newPassword: password,
+        turnstileToken
       });
       setMessage(res.data.message);
       addToast(res.data.message, 'success');
@@ -91,22 +95,14 @@ export default function ResetPassword() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-xl transition-colors">
-            <button
-              type="button"
-              onClick={() => setIsNotRobot(!isNotRobot)}
-              className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-purple-500 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'border-zinc-400 dark:border-zinc-600 hover:border-purple-400 dark:hover:border-purple-500/50'}`}
-            >
-              {isNotRobot && (
-                <svg className="w-4 h-4 text-white dark:text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-            <span className="text-xs font-mono tracking-widest text-zinc-600 dark:text-zinc-400 transition-colors">HUMAN_VERIFICATION</span>
-            <div className="ml-auto flex items-center justify-center">
-               <div className="w-5 h-5 border-2 border-purple-400 dark:border-purple-500 border-t-transparent rounded-full animate-spin opacity-40"></div>
-            </div>
+          <div className="flex items-center justify-center py-2 transition-colors">
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+              onSuccess={(token) => setTurnstileToken(token)}
+              options={{
+                theme: theme === 'dark' ? 'dark' : 'light',
+              }}
+            />
           </div>
 
           <button 
@@ -152,22 +148,14 @@ export default function ResetPassword() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-xl transition-colors">
-            <button
-              type="button"
-              onClick={() => setIsNotRobot(!isNotRobot)}
-              className={`w-6 h-6 rounded flex items-center justify-center transition-colors border-2 ${isNotRobot ? 'bg-purple-500 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'border-zinc-400 dark:border-zinc-600 hover:border-purple-400 dark:hover:border-purple-500/50'}`}
-            >
-              {isNotRobot && (
-                <svg className="w-4 h-4 text-white dark:text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-            <span className="text-xs font-mono tracking-widest text-zinc-600 dark:text-zinc-400 transition-colors">HUMAN_VERIFICATION</span>
-            <div className="ml-auto flex items-center justify-center">
-               <div className="w-5 h-5 border-2 border-purple-400 dark:border-purple-500 border-t-transparent rounded-full animate-spin opacity-40"></div>
-            </div>
+          <div className="flex items-center justify-center py-2 transition-colors">
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+              onSuccess={(token) => setTurnstileToken(token)}
+              options={{
+                theme: theme === 'dark' ? 'dark' : 'light',
+              }}
+            />
           </div>
 
           <button 
