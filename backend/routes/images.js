@@ -1,11 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { Jimp, JimpMime } = require('jimp');
-const jpeg = require('jpeg-js');
-const originalDecode = jpeg.decode;
-jpeg.decode = function(data, opts) {
-  return originalDecode(data, { ...opts, maxMemoryUsageInMB: 4096, maxResolutionInMP: 400 });
-};
+const sharp = require('sharp');
 const AdmZip = require('adm-zip');
 const fs = require('fs');
 const path = require('path');
@@ -50,23 +45,24 @@ router.post('/compress', optionalAuth, upload.array('images', 20), async (req, r
         const originalName = file.originalname;
         const format = file.mimetype.split('/')[1];
 
-        // Basic compression using Jimp
-        if (['jpeg', 'jpg', 'png', 'bmp'].includes(format)) {
+        // Basic compression using Sharp
+        if (['jpeg', 'jpg', 'png', 'webp', 'avif', 'tiff'].includes(format)) {
           try {
-            let image = await Jimp.read(file.buffer);
+            let transformer = sharp(file.buffer);
             
-            let mime;
-            let options = {};
             if (format === 'jpeg' || format === 'jpg') {
-              mime = JimpMime.jpeg;
-              options = { quality };
+              transformer = transformer.jpeg({ quality });
             } else if (format === 'png') {
-              mime = JimpMime.png;
-            } else if (format === 'bmp') {
-              mime = JimpMime.bmp;
+              transformer = transformer.png({ quality });
+            } else if (format === 'webp') {
+              transformer = transformer.webp({ quality });
+            } else if (format === 'avif') {
+              transformer = transformer.avif({ quality });
+            } else if (format === 'tiff') {
+              transformer = transformer.tiff({ quality });
             }
 
-            compressedBuffer = await image.getBuffer(mime, options);
+            compressedBuffer = await transformer.toBuffer();
           } catch (imgError) {
             console.error(`Error processing image ${originalName}:`, imgError);
             compressedBuffer = file.buffer; // fallback to original
