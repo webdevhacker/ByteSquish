@@ -12,6 +12,9 @@ const userSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   twoFactorSecret: { type: String },
   isTwoFactorEnabled: { type: Boolean, default: false },
+  lastActive: { type: Date, default: Date.now },
+  inactivityState: { type: Number, default: 0 }, // 0: active, 1: 1st reminder, 2: 2nd reminder
+  isDeactivated: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

@@ -8,11 +8,30 @@ const checkSession = async (token) => {
     if (decoded.sessionId) {
       const session = await Session.findById(decoded.sessionId).populate('userId');
       if (session && session.userId) {
+        if (session.userId.isDeactivated) {
+          return null;
+        }
+        // Update lastActive asynchronously
+        User.updateOne(
+          { _id: session.userId._id },
+          { $set: { lastActive: new Date(), inactivityState: 0 } }
+        ).catch(err => console.error('Failed to update lastActive:', err));
+
         return { userId: session.userId._id, sessionId: session._id, isAdmin: session.userId.isAdmin };
       }
     } else {
       const user = await User.findById(decoded.userId);
       if (user) {
+        // If the user was deactivated, we could optionally deny them access here, but for now we just track activity
+        if (user.isDeactivated) {
+          return null;
+        }
+        // Update lastActive and reset inactivityState asynchronously
+        User.updateOne(
+          { _id: user._id },
+          { $set: { lastActive: new Date(), inactivityState: 0 } }
+        ).catch(err => console.error('Failed to update lastActive:', err));
+        
         return { userId: user._id, isAdmin: user.isAdmin };
       }
     }

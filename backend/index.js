@@ -5,10 +5,16 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const imageRoutes = require('./routes/images');
 const adminRoutes = require('./routes/admin');
+const startInactivityCron = require('./cron/inactivityCron');
 const mongoose = require('mongoose');
 const Image = require('./models/Image');
 const fs = require('fs');
 const path = require('path');
+
+const app = express();
+
+// Start background cron jobs
+startInactivityCron();
 
 mongoose.connect(process.env.DATABASE_URL).then(() => {
   console.log('Connected to MongoDB via Mongoose');
@@ -16,7 +22,6 @@ mongoose.connect(process.env.DATABASE_URL).then(() => {
   console.error('MongoDB connection error:', err);
 });
 
-const app = express();
 if (process.env.TRUST_PROXY === "true") {
   app.set("trust proxy", 1);
 }
