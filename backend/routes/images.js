@@ -52,20 +52,25 @@ router.post('/compress', optionalAuth, upload.array('images', 20), async (req, r
 
         // Basic compression using Jimp
         if (['jpeg', 'jpg', 'png', 'bmp'].includes(format)) {
-          let image = await Jimp.read(file.buffer);
-          
-          let mime;
-          let options = {};
-          if (format === 'jpeg' || format === 'jpg') {
-            mime = JimpMime.jpeg;
-            options = { quality };
-          } else if (format === 'png') {
-            mime = JimpMime.png;
-          } else if (format === 'bmp') {
-            mime = JimpMime.bmp;
-          }
+          try {
+            let image = await Jimp.read(file.buffer);
+            
+            let mime;
+            let options = {};
+            if (format === 'jpeg' || format === 'jpg') {
+              mime = JimpMime.jpeg;
+              options = { quality };
+            } else if (format === 'png') {
+              mime = JimpMime.png;
+            } else if (format === 'bmp') {
+              mime = JimpMime.bmp;
+            }
 
-          compressedBuffer = await image.getBuffer(mime, options);
+            compressedBuffer = await image.getBuffer(mime, options);
+          } catch (imgError) {
+            console.error(`Error processing image ${originalName}:`, imgError);
+            compressedBuffer = file.buffer; // fallback to original
+          }
         } else {
           compressedBuffer = file.buffer;
         }
